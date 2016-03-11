@@ -15,38 +15,28 @@
  * along with Gradoop. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.gradoop.model.impl.operators.difference.functions;
+package org.gradoop.model.impl.functions.graphcontainment;
 
-import org.apache.flink.api.common.functions.GroupReduceFunction;
+import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.util.Collector;
+import org.gradoop.model.api.EPGMVertex;
+import org.gradoop.model.impl.id.GradoopId;
 
 /**
- * If a group only contains one element, return it. Else return nothing.
+ * Takes a vertex and creates one tuple 2 of this vertex and a graph id per
+ * graph the vertex is contained in.
  *
- * @param <O> any object type
+ * @param <V> epgm vertex type
  */
-public class RemoveCut<O>
-  implements GroupReduceFunction<Tuple2<O, Long>, O> {
+public class PairVertexWithGraphs<V extends EPGMVertex>
+  implements FlatMapFunction<V, Tuple2<V, GradoopId>> {
 
   @Override
-  public void reduce(Iterable<Tuple2<O, Long>> iterable,
-    Collector<O> collector) throws Exception {
-    boolean inFirst = false;
-    boolean inSecond = false;
-
-    O o = null;
-
-    for (Tuple2<O, Long> tuple : iterable) {
-      o = tuple.f0;
-      if (tuple.f1 == 1L) {
-        inFirst = true;
-      } else {
-        inSecond = true;
-      }
-    }
-    if (inFirst && !inSecond) {
-      collector.collect(o);
+  public void flatMap(V v, Collector<Tuple2<V, GradoopId>> collector) throws
+    Exception {
+    for (GradoopId graphId : v.getGraphIds()) {
+      collector.collect(new Tuple2<>(v, graphId));
     }
   }
 }

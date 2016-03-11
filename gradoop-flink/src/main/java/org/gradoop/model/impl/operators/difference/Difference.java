@@ -23,6 +23,8 @@ import org.gradoop.model.api.EPGMEdge;
 import org.gradoop.model.api.EPGMGraphHead;
 import org.gradoop.model.api.EPGMVertex;
 import org.gradoop.model.impl.operators.base.SetOperatorBase;
+import org.gradoop.model.impl.operators.difference.functions.CreateTuple2WithLong;
+import org.gradoop.model.impl.operators.difference.functions.IdOf0InTuple2;
 import org.gradoop.model.impl.operators.difference.functions.RemoveCut;
 
 /**
@@ -50,16 +52,16 @@ public class Difference<
   protected DataSet<G> computeNewGraphHeads() {
     // assign 1L to each logical graph in the first collection
     DataSet<Tuple2<G, Long>> thisGraphs = firstCollection.getGraphHeads()
-      .map(new Tuple2LongMapper<G>(1L));
+      .map(new CreateTuple2WithLong<G>(1L));
     // assign 2L to each logical graph in the second collection
     DataSet<Tuple2<G, Long>> otherGraphs = secondCollection.getGraphHeads()
-      .map(new Tuple2LongMapper<G>(2L));
+      .map(new CreateTuple2WithLong<G>(2L));
 
     // union the logical graphs, group them by their identifier and check that
     // there is no graph in the group that belongs to the second collection
     return thisGraphs
       .union(otherGraphs)
-      .groupBy(new GraphTupleKeySelector<G, Long>())
+      .groupBy(new IdOf0InTuple2<G, Long>())
       .reduceGroup(new RemoveCut<G>());
   }
 

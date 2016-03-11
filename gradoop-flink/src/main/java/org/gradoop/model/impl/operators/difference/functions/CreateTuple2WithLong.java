@@ -17,36 +17,39 @@
 
 package org.gradoop.model.impl.operators.difference.functions;
 
-import org.apache.flink.api.common.functions.GroupReduceFunction;
+import org.apache.flink.api.common.functions.MapFunction;
+import org.apache.flink.api.java.functions.FunctionAnnotation;
 import org.apache.flink.api.java.tuple.Tuple2;
-import org.apache.flink.util.Collector;
 
 /**
- * If a group only contains one element, return it. Else return nothing.
+ * Left join, return first field of left tuple 2.
  *
- * @param <O> any object type
+ * @param <O> an object type
  */
-public class RemoveCut<O>
-  implements GroupReduceFunction<Tuple2<O, Long>, O> {
+@FunctionAnnotation.ForwardedFieldsFirst("*->*")
+public class CreateTuple2WithLong<O> implements
+  MapFunction<O, Tuple2<O, Long>> {
 
+  /**
+   * Reduce instantiations
+   */
+  private final Tuple2<O, Long> reuseTuple = new Tuple2<>();
+
+  /**
+   * Creates this mapper
+   *
+   * @param secondField user defined long value
+   */
+  public CreateTuple2WithLong(Long secondField) {
+    this.reuseTuple.f1 = secondField;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
   @Override
-  public void reduce(Iterable<Tuple2<O, Long>> iterable,
-    Collector<O> collector) throws Exception {
-    boolean inFirst = false;
-    boolean inSecond = false;
-
-    O o = null;
-
-    for (Tuple2<O, Long> tuple : iterable) {
-      o = tuple.f0;
-      if (tuple.f1 == 1L) {
-        inFirst = true;
-      } else {
-        inSecond = true;
-      }
-    }
-    if (inFirst && !inSecond) {
-      collector.collect(o);
-    }
+  public Tuple2<O, Long> map(O o) throws Exception {
+    reuseTuple.f0 = o;
+    return reuseTuple;
   }
 }

@@ -17,36 +17,27 @@
 
 package org.gradoop.model.impl.operators.difference.functions;
 
-import org.apache.flink.api.common.functions.GroupReduceFunction;
+import org.apache.flink.api.java.functions.FunctionAnnotation;
+import org.apache.flink.api.java.functions.KeySelector;
 import org.apache.flink.api.java.tuple.Tuple2;
-import org.apache.flink.util.Collector;
+import org.gradoop.model.api.EPGMGraphHead;
+import org.gradoop.model.impl.id.GradoopId;
 
 /**
- * If a group only contains one element, return it. Else return nothing.
+ * Returns the identifier of first element in a tuple 2.
  *
- * @param <O> any object type
+ * @param <GD> graph data type
+ * @param <C>  type of second element in tuple
  */
-public class RemoveCut<O>
-  implements GroupReduceFunction<Tuple2<O, Long>, O> {
+@FunctionAnnotation.ForwardedFields("f0.id->*")
+public class IdOf0InTuple2<GD extends EPGMGraphHead, C>
+  implements KeySelector<Tuple2<GD, C>, GradoopId> {
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
-  public void reduce(Iterable<Tuple2<O, Long>> iterable,
-    Collector<O> collector) throws Exception {
-    boolean inFirst = false;
-    boolean inSecond = false;
-
-    O o = null;
-
-    for (Tuple2<O, Long> tuple : iterable) {
-      o = tuple.f0;
-      if (tuple.f1 == 1L) {
-        inFirst = true;
-      } else {
-        inSecond = true;
-      }
-    }
-    if (inFirst && !inSecond) {
-      collector.collect(o);
-    }
+  public GradoopId getKey(Tuple2<GD, C> pair) throws Exception {
+    return pair.f0.getId();
   }
 }
