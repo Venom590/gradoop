@@ -15,8 +15,7 @@
     <packaging>jar</packaging>
 
     <name>Gradoop Datagen</name>
-    <description>Data generators for Gradoop.
-    </description>
+    <description>Data generators for Gradoop.</description>
 
     <build>
         <plugins>
@@ -45,7 +44,7 @@
         <!-- Gradoop -->
         <dependency>
             <groupId>org.gradoop</groupId>
-            <artifactId>gradoop-flink</artifactId>
+            <artifactId>gradoop-algorithms</artifactId>
         </dependency>
 
         <!-- Test dependencies -->
