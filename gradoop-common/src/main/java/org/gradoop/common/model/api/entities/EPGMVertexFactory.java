@@ -120,4 +120,14 @@ public interface EPGMVertexFactory<V extends EPGMVertex>
    */
   V initVertex(GradoopId id, String label, PropertyList properties,
     GradoopIdSet graphIds);
+
+  /**
+   * Initializes a vertex based on the given parameters.
+   *
+   * @param id         vertex identifier
+   * @param label      vertex labels
+   * @param properties vertex properties
+   * @return vertex data
+   */
+  V createVertex(GradoopId id, String label, PropertyList properties);
 }
