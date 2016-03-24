@@ -124,6 +124,15 @@ public class VertexPojoFactory implements EPGMVertexFactory<VertexPojo> {
    * {@inheritDoc}
    */
   @Override
+  public VertexPojo createVertex(GradoopId id, String label,
+    PropertyList properties) {
+    return initVertex(GradoopId.get(), label, properties, null);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
   public Class<VertexPojo> getType() {
     return VertexPojo.class;
   }
