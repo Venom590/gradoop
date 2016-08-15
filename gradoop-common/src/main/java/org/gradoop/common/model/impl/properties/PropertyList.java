@@ -207,7 +207,7 @@ public class PropertyList implements Iterable<Property>, Writable {
    *
    * @param key property key
    */
-  public void delete(String key) {
+  public void remove(String key) {
     for (Property property : properties) {
       if (property.getKey().equals(key)) {
         properties.remove(property);
@@ -222,7 +222,7 @@ public class PropertyList implements Iterable<Property>, Writable {
    *
    * @param property
    */
-  public void delete(Property property) {
+  public void remove(Property property) {
     if (properties.contains(property)) {
       properties.remove(property);
     }
