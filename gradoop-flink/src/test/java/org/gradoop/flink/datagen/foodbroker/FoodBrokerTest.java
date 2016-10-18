@@ -39,6 +39,24 @@ import java.io.IOException;
 import static org.junit.Assert.assertEquals;
 
 public class FoodBrokerTest extends GradoopFlinkTestBase {
+
+  @Test
+  public void testHighScaleFactor() throws Exception {
+
+    FoodBrokerConfig config = FoodBrokerConfig.fromFile(
+      FoodBrokerTest.class.getResource("/foodbroker/config.json").getFile());
+
+    config.setScaleFactor(1);
+
+    FoodBroker foodBroker =
+      new FoodBroker(getExecutionEnvironment(), getConfig(), config);
+
+
+    GraphCollection cases = foodBroker.execute();
+
+    System.out.println("cases: " + cases.getGraphHeads().count());
+  }
+
   @Test
   public void testGenerate() throws Exception {
 
