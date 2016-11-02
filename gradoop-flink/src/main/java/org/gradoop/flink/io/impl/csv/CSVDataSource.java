@@ -38,9 +38,7 @@ import org.gradoop.flink.util.GradoopFlinkConfig;
 import org.xml.sax.SAXException;
 
 import javax.xml.bind.JAXBException;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -145,7 +143,7 @@ public class CSVDataSource extends CSVBase implements DataSource {
       .map(new EPGMElementToPojo<org.gradoop.common.model.impl.pojo.Edge>())
       .returns(edgeFactory.getType())
       .map(new GradoopEdgeIds())
-      .withBroadcastSet(vertexIds, GradoopEdgeIds.ID_MAP);
+      .withBroadcastSet(vertexIds, CSVConstants.BROADCAST_ID_MAP);
 
     //get all graph keys from vertex properties
     DataSet<Tuple2<org.gradoop.common.model.impl.pojo.Vertex, String>> vertexGraphKeys = vertices
@@ -170,13 +168,13 @@ public class CSVDataSource extends CSVBase implements DataSource {
     vertices = vertexGraphKeys
       .groupBy("f0.id")
       .reduceGroup(new SetElementGraphIds<org.gradoop.common.model.impl.pojo.Vertex>())
-      .withBroadcastSet(graphHeads, SetElementGraphIds.BROADCAST_GRAPHHEADS);
+      .withBroadcastSet(graphHeads, CSVConstants.BROADCAST_GRAPHHEADS);
 
     //set all graph heads
     edges = edgeGraphKeys
       .groupBy("f0.id")
       .reduceGroup(new SetElementGraphIds<org.gradoop.common.model.impl.pojo.Edge>())
-      .withBroadcastSet(graphHeads, SetElementGraphIds.BROADCAST_GRAPHHEADS);
+      .withBroadcastSet(graphHeads, CSVConstants.BROADCAST_GRAPHHEADS);
 
     return GraphCollection.fromDataSets(graphHeads, vertices, edges, getConfig());
   }
