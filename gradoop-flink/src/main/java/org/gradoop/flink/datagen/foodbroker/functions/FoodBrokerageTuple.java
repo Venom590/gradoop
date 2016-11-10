@@ -19,7 +19,6 @@ package org.gradoop.flink.datagen.foodbroker.functions;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.util.Collector;
@@ -162,7 +161,8 @@ public class FoodBrokerageTuple
 
     properties.set(Constants.SUPERTYPE_KEY, Constants.SUPERCLASS_VALUE_TRANSACTIONAL);
     properties.set("date", startDate);
-    properties.set("num", bid);
+
+    properties.set(Constants.SOURCEID_KEY, "ERP_" + bid);
 
     Vertex salesQuotation = newVertex(label, properties);
 
@@ -269,11 +269,11 @@ public class FoodBrokerageTuple
     influencingMasterQuality.clear();
     influencingMasterQuality.add(getEdgeTargetQuality(
       "sentTo", salesQuotation.getId(), Constants.CUSTOMER_MAP));
-    influencingMasterQuality.add(emplyoeeMap.get(rndEmployee));
+    influencingMasterQuality.add(employeeMap.get(rndEmployee));
 
     properties.set(Constants.SUPERTYPE_KEY, Constants.SUPERCLASS_VALUE_TRANSACTIONAL);
     properties.set("date", date);
-    properties.set("num", bid);
+    properties.set(Constants.SOURCEID_KEY, "ERP_" + bid);
     properties.set("deliveryDate", config.delayDelayConfiguration(date,
       influencingMasterQuality, "SalesOrder", "deliveryAgreementDelay"));
 
@@ -371,7 +371,7 @@ public class FoodBrokerageTuple
 
     properties.set(Constants.SUPERTYPE_KEY, Constants.SUPERCLASS_VALUE_TRANSACTIONAL);
     properties.set("date", date);
-    properties.set("num", bid);
+    properties.set(Constants.SOURCEID_KEY, "ERP_" + bid);
 
     Vertex purchOrder = newVertex(label, properties);
 
@@ -496,7 +496,7 @@ public class FoodBrokerageTuple
 
     properties.set(Constants.SUPERTYPE_KEY, Constants.SUPERCLASS_VALUE_TRANSACTIONAL);
     properties.set("date", date);
-    properties.set("num", bid);
+    properties.set(Constants.SOURCEID_KEY, "ERP_" + bid);
     properties.set("trackingCode", "***TODO***");
 
     Vertex deliveryNote = newVertex(label, properties);
@@ -569,7 +569,7 @@ public class FoodBrokerageTuple
     properties.set("date", date);
     String bid = createBusinessIdentifier(
       currentId++, Constants.PURCHINVOICE_ACRONYM);
-    properties.set("num", bid);
+    properties.set(Constants.SOURCEID_KEY, "ERP_" + bid);
     properties.set("expense", total);
     properties.set("text", "*** TODO @ FoodBrokerageTuple ***");
 
@@ -601,7 +601,7 @@ public class FoodBrokerageTuple
     properties.set("date", date);
     String bid = createBusinessIdentifier(
       currentId++, Constants.SALESINVOICE_ACRONYM);
-    properties.set("num", bid);
+    properties.set(Constants.SOURCEID_KEY, "ERP_" + bid);
     properties.set("revenue", BigDecimal.ZERO);
     properties.set("text", "*** TODO @ FoodBrokerageTuple ***");
 
