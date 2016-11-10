@@ -90,9 +90,9 @@ public abstract class AbstractMasterDataGenerator
 
     List<String> values = null;
 
+    String adjectivesPath = System.getProperty("user.home")+ fileName;
+
     try {
-      String adjectivesPath = EmployeeGenerator.class
-        .getResource(fileName).getFile();
 
       values = FileUtils.readLines(FileUtils.getFile
         (adjectivesPath));
