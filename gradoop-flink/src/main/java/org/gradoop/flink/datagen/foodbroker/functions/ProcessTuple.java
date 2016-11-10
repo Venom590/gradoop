@@ -19,6 +19,7 @@ import org.gradoop.flink.datagen.foodbroker.config.FoodBrokerConfig;
 import java.math.BigDecimal;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 
@@ -91,7 +92,7 @@ public abstract class ProcessTuple<S, T> extends
   /**
    * map to get the employee quality of a given gradoop id
    */
-  Map<GradoopId, Float> emplyoeeMap;
+  Map<GradoopId, Float> employeeMap;
   /**
    * map to get the prodouct quality of a given gradoop id
    */
@@ -130,7 +131,7 @@ public abstract class ProcessTuple<S, T> extends
     logisticMap = getRuntimeContext().<Map<GradoopId, Float>>
       getBroadcastVariable(Constants.LOGISTIC_MAP).get(0);
 
-    emplyoeeMap = getRuntimeContext().<Map<GradoopId, Float>>
+    employeeMap = getRuntimeContext().<Map<GradoopId, Float>>
       getBroadcastVariable(Constants.EMPLOYEE_MAP).get(0);
 
     productQualityMap = getRuntimeContext().<Map<GradoopId, Float>>
@@ -139,7 +140,7 @@ public abstract class ProcessTuple<S, T> extends
     customerIterator = customerMap.entrySet().iterator();
     vendorIterator = vendorMap.entrySet().iterator();
     logisticIterator = logisticMap.entrySet().iterator();
-    employeeIterator = emplyoeeMap.entrySet().iterator();
+    employeeIterator = employeeMap.entrySet().iterator();
     productQualityIterator = productQualityMap.entrySet().iterator();
   }
 
@@ -232,7 +233,7 @@ public abstract class ProcessTuple<S, T> extends
     case Constants.LOGISTIC_MAP:
       return logisticMap.get(target);
     case Constants.EMPLOYEE_MAP:
-      return emplyoeeMap.get(target);
+      return employeeMap.get(target);
     case Constants.USER_MAP:
       return userMap.get(target);
     default:
@@ -240,38 +241,44 @@ public abstract class ProcessTuple<S, T> extends
     }
   }
 
-  protected GradoopId getNextCustomer() {
-    if (!customerIterator.hasNext()) {
-      customerIterator = customerMap.entrySet().iterator();
+  private GradoopId getRandomId(
+    Iterator<Map.Entry<GradoopId, Float>> iterator, int mapSize) {
+    Random random = new Random();
+    int rnd = random.nextInt(mapSize);
+    for (int i = 0; i < rnd; i++) {
+      iterator.next();
     }
-    return customerIterator.next().getKey();
+    return iterator.next().getKey();
+  }
+
+  protected GradoopId getNextCustomer() {
+    return getRandomId(customerMap.entrySet().iterator(), customerMap
+      .entrySet().size());
   }
 
   protected GradoopId getNextVendor() {
-    if (!vendorIterator.hasNext()) {
-      vendorIterator = vendorMap.entrySet().iterator();
-    }
-    return vendorIterator.next().getKey();
+    return getRandomId(vendorMap.entrySet().iterator(), vendorMap
+      .entrySet().size());
   }
 
   protected GradoopId getNextLogistic() {
-    if (!logisticIterator.hasNext()) {
-      logisticIterator = logisticMap.entrySet().iterator();
-    }
-    return logisticIterator.next().getKey();
+    return getRandomId(logisticMap.entrySet().iterator(), logisticMap
+      .entrySet().size());
   }
 
   protected GradoopId getNextEmployee() {
-    if (!employeeIterator.hasNext()) {
-      employeeIterator = emplyoeeMap.entrySet().iterator();
-    }
-    return employeeIterator.next().getKey();
+    return getRandomId(employeeMap.entrySet().iterator(), employeeMap
+      .entrySet().size());
   }
 
   protected GradoopId getNextProduct() {
-    if (!productQualityIterator.hasNext()) {
-      productQualityIterator = productQualityMap.entrySet().iterator();
-      productPriceIterator = productPriceMap.entrySet().iterator();
+    Random random = new Random();
+    int rnd = random.nextInt(productQualityMap.entrySet().size());
+    productQualityIterator = productQualityMap.entrySet().iterator();
+    productPriceIterator = productPriceMap.entrySet().iterator();
+    for (int i = 0; i < rnd; i++) {
+      productQualityIterator.next();
+      productPriceIterator.next();
     }
     productPriceIterator.next();
     return productQualityIterator.next().getKey();
