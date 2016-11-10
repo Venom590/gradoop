@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Configuration class which loads a json config
@@ -242,16 +243,14 @@ public class FoodBrokerConfig implements Serializable {
   public Long getStartDate() {
     String startDate;
     DateFormat formatter;
-    Date date = null;
+    Date date = new Date();
 
     try {
       startDate = root.getJSONObject("Process")
         .getString("startDate");
       formatter = new SimpleDateFormat("yyyy-MM-dd");
       date = formatter.parse(startDate);
-    } catch (JSONException e) {
-      e.printStackTrace();
-    } catch (ParseException e) {
+    } catch (JSONException | ParseException e) {
       e.printStackTrace();
     }
 
@@ -426,7 +425,7 @@ public class FoodBrokerConfig implements Serializable {
     List<Float> influencingMasterDataQuality, String node, String key) {
     Integer min = 0;
     Integer max = 0;
-    Boolean higherIsBetter = null;
+    Boolean higherIsBetter = true;
     Float influence = null;
 
     try {
@@ -438,8 +437,9 @@ public class FoodBrokerConfig implements Serializable {
     } catch (JSONException e) {
       e.printStackTrace();
     }
+    Random random = new Random();
 
-    Integer startValue = 1 + (int) ((double) (max - min) * Math.random()) + min;
+    Integer startValue = 1 + random.nextInt(max - min) + min;
 
     Integer value = getValue(influencingMasterDataQuality, higherIsBetter,
       influence, startValue.floatValue()).intValue();
@@ -464,7 +464,7 @@ public class FoodBrokerConfig implements Serializable {
   public BigDecimal getDecimalVariationConfigurationValue(
     List<Float> influencingMasterDataQuality, String node, String key) {
     Float baseValue = null;
-    Boolean higherIsBetter = null;
+    Boolean higherIsBetter = true;
     Float influence = null;
 
     try {
@@ -496,7 +496,7 @@ public class FoodBrokerConfig implements Serializable {
     List<Float> influencingMasterDataQuality, String node, String key) {
 
     Float baseValue = null;
-    Boolean higherIsBetter = null;
+    Boolean higherIsBetter = true;
     Float influence = null;
 
     try {

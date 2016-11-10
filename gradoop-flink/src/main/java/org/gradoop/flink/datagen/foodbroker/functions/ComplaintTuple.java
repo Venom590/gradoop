@@ -231,7 +231,7 @@ public class ComplaintTuple
       properties.set("date", ticket.getPropertyValue("createdAt").getLong());
       String bid = createBusinessIdentifier(
         currentId++, Constants.SALESINVOICE_ACRONYM);
-      properties.set("num", bid);
+      properties.set(Constants.SOURCEID_KEY, "ERP_" + bid);
       properties.set("revenue", refundAmount);
       properties.set("text", "*** TODO @ ComplaintHandling ***");
 
@@ -275,7 +275,7 @@ public class ComplaintTuple
       properties.set("date", ticket.getPropertyValue("createdAt").getLong());
       String bid = createBusinessIdentifier(
         currentId++, Constants.PURCHINVOICE_ACRONYM);
-      properties.set("num", bid);
+      properties.set(Constants.SOURCEID_KEY, "ERP_" + bid);
       properties.set("expense", refundAmount);
       properties.set("text", "*** TODO @ ComplaintHandling ***");
 
@@ -367,8 +367,6 @@ public class ComplaintTuple
       email = email.replace(" ", ".").toLowerCase();
       email += "@biiig.org";
       properties.set("email", email);
-      properties.remove("num");
-      properties.remove("sid");
       Vertex user = vertexFactory.createVertex("User", properties, graphIds);
 
       masterDataMap.put(employeeId, user);
@@ -389,8 +387,7 @@ public class ComplaintTuple
       properties.set("erpCustNum", customer.getId().toString());
       properties.set("contactPhone", "0123456789");
       properties.set("account", "CL" + customer.getId().toString());
-      properties.remove("num");
-      properties.remove("sid");
+
       Vertex client = vertexFactory.createVertex("Client", properties, graphIds);
 
       masterDataMap.put(customerId, client);

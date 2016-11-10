@@ -36,7 +36,7 @@ public class Constants {
   /**
    * reserved property key referring to the source identifier of vertices
    */
-  public static final String SOURCEID_KEY = "sid";
+  public static final String SOURCEID_KEY = "num";
 
   /**
    * property key for master data quality
@@ -70,10 +70,6 @@ public class Constants {
   public static final String PRODUCT_PRICE_MAP = "productPriceMap";
 
   public static final String USER_MAP = "userMap";
-
-  public static final String VERTEX_MAP = "vertexMap";
-
-  public static final String EDGE_MAP = "edgeMap";
 
   public static final String SALESQUOTATION_ACRONYM = "SQN";
   public static final String SALESORDER_ACRONYM = "SOR";
