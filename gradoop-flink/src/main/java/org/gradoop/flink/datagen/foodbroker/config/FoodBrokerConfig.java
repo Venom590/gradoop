@@ -439,7 +439,10 @@ public class FoodBrokerConfig implements Serializable {
     }
     Random random = new Random();
 
-    Integer startValue = 1 + random.nextInt(max - min) + min;
+    Integer startValue = 1;
+     if (max-min > 0) {
+       startValue += random.nextInt(max - min) + min;
+     }
 
     Integer value = getValue(influencingMasterDataQuality, higherIsBetter,
       influence, startValue.floatValue()).intValue();
