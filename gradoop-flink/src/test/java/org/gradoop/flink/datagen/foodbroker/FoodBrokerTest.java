@@ -27,7 +27,6 @@ import org.gradoop.flink.datagen.foodbroker.functions
   .TransactionalVerticesFromVertices;
 import org.gradoop.flink.io.api.DataSink;
 import org.gradoop.flink.io.impl.json.JSONDataSink;
-import org.gradoop.flink.io.impl.tlf.TLFIOTest;
 import org.gradoop.flink.model.GradoopFlinkTestBase;
 import org.gradoop.flink.model.impl.GradoopFlinkTestUtils;
 import org.gradoop.flink.model.impl.GraphCollection;
