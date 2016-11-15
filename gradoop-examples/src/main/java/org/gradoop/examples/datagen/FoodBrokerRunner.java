@@ -1,10 +1,5 @@
 package org.gradoop.examples.datagen;
 
-import org.apache.commons.cli.BasicParser;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
 import org.apache.flink.api.common.ProgramDescription;
 import org.gradoop.examples.AbstractRunner;
 import org.gradoop.flink.datagen.foodbroker.FoodBroker;
@@ -25,14 +20,22 @@ public class FoodBrokerRunner extends AbstractRunner
     Integer scaleFactor = Integer.parseInt(args[0]);
     config.setScaleFactor(scaleFactor);
 
-    FoodBroker foodBroker =
-      new FoodBroker(getExecutionEnvironment(),
-        GradoopFlinkConfig.createConfig(getExecutionEnvironment()), config);
+    long time = 0;
+
+    for (int i = 0; i < 10; i++) {
+      FoodBroker foodBroker =
+        new FoodBroker(getExecutionEnvironment(),
+          GradoopFlinkConfig.createConfig(getExecutionEnvironment()), config);
+
+      GraphCollection cases = foodBroker.execute();
+      cases.getGraphHeads().count();
+      time += getExecutionEnvironment().getLastJobExecutionResult()
+        .getNetRuntime();
+    }
+
+    System.out.println("Average runtime = " + (time / 10));
 
 
-    GraphCollection cases = foodBroker.execute();
-
-    System.out.println("cases: " + cases.getGraphHeads().count());
   }
 
   @Override
