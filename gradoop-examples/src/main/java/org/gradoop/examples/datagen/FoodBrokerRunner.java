@@ -11,10 +11,17 @@ import org.gradoop.flink.util.GradoopFlinkConfig;
 public class FoodBrokerRunner extends AbstractRunner
   implements ProgramDescription {
 
+  /**
+   * Starts 10 FoddBroker executions with the given config parameters and
+   * scalefactor.
+   *
+   * @param args [0] parent directory to foodbroker data and config folder
+   *             [1] scalefactor for foodbroker
+   * @throws Exception
+   */
   public static void main(String[] args) throws Exception {
 
-    String configFile = System.getProperty("user.home") +
-      "/foodbroker/config.json";
+    String configFile = args[0] + "/foodbroker/config.json";
     FoodBrokerConfig config = FoodBrokerConfig.fromFile(configFile);
 
     Integer scaleFactor = Integer.parseInt(args[0]);

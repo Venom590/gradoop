@@ -85,12 +85,15 @@ public abstract class AbstractMasterDataGenerator
   }
 
   List<String> getStringValuesFromFile(String fileName) {
-    fileName = "/foodbroker/" + fileName;
+//    fileName = "/foodbroker/" + fileName;
 
 
     List<String> values = null;
 
-    String adjectivesPath = System.getProperty("user.home")+ fileName;
+    String adjectivesPath = foodBrokerConfig.getPath().getParent().toString()
+      + fileName;
+      //System.getProperty("user.home")+ fileName;
+
 
     try {
 

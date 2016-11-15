@@ -24,6 +24,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -46,6 +49,8 @@ public class FoodBrokerConfig implements Serializable {
    */
   private Integer scaleFactor = 0;
 
+  private Path path;
+
   /**
    * Valued constructor.
    *
@@ -54,6 +59,7 @@ public class FoodBrokerConfig implements Serializable {
    * @throws JSONException
    */
   public FoodBrokerConfig(String path) throws IOException, JSONException {
+    this.path = Paths.get(path);
     File file = FileUtils.getFile(path);
     root = new JSONObject(FileUtils.readFileToString(file));
   }
@@ -557,5 +563,14 @@ public class FoodBrokerConfig implements Serializable {
     influencingMasterDataQualities.add(influencingMasterDataQuality);
     return delayDelayConfiguration(
       date, influencingMasterDataQualities, node, key);
+  }
+
+  /**
+   * Returns the path to the config file.
+   *
+   * @return path to config file
+   */
+  public Path getPath() {
+    return path;
   }
 }
