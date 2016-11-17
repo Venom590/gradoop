@@ -49,7 +49,7 @@ public class FoodBrokerConfig implements Serializable {
    */
   private Integer scaleFactor = 0;
 
-  private Path path;
+  private String path;
 
   /**
    * Valued constructor.
@@ -59,7 +59,7 @@ public class FoodBrokerConfig implements Serializable {
    * @throws JSONException
    */
   public FoodBrokerConfig(String path) throws IOException, JSONException {
-    this.path = Paths.get(path);
+    this.path = path;
     File file = FileUtils.getFile(path);
     root = new JSONObject(FileUtils.readFileToString(file));
   }
@@ -570,7 +570,7 @@ public class FoodBrokerConfig implements Serializable {
    *
    * @return path to config file
    */
-  public Path getPath() {
+  public String getPath() {
     return path;
   }
 }

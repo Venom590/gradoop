@@ -15,13 +15,14 @@ public class FoodBrokerRunner extends AbstractRunner
    * Starts 10 FoddBroker executions with the given config parameters and
    * scalefactor.
    *
-   * @param args [0] parent directory to foodbroker data and config folder
-   *             [1] scalefactor for foodbroker
+   * @param args [0] scalefactor for foodbroker
+   *             [1] parent directory to foodbroker data and config folder
+   *
    * @throws Exception
    */
   public static void main(String[] args) throws Exception {
 
-    String configFile = args[0] + "/foodbroker/config.json";
+    String configFile = args[1] + "/foodbroker/config.json";
     FoodBrokerConfig config = FoodBrokerConfig.fromFile(configFile);
 
     Integer scaleFactor = Integer.parseInt(args[0]);
