@@ -135,7 +135,7 @@ public class FoodBrokerTest extends GradoopFlinkTestBase {
     FoodBrokerConfig config = FoodBrokerConfig.fromFile(
       FoodBrokerTest.class.getResource("/foodbroker/config.json").getFile());
 
-    config.setScaleFactor(0);
+    config.setScaleFactor(1);
 
     FoodBroker foodBroker =
       new FoodBroker(getExecutionEnvironment(), getConfig(), config);
@@ -151,14 +151,15 @@ public class FoodBrokerTest extends GradoopFlinkTestBase {
   public void toJson() throws Exception {
 
     GraphCollection cases = generateCollection();
-
-    String graphsPath =
-      FoodBrokerTest.class.getResource("/foodbroker").getFile() +
-        "/graphs.json";
-    String nodesPath =
-      FoodBrokerTest.class.getResource("/foodbroker").getFile() + "/nodes.json";
-    String edgesPath =
-      FoodBrokerTest.class.getResource("/foodbroker").getFile() + "/edges.json";
+    getExecutionEnvironment().setParallelism(1);
+    String graphsPath = System.getProperty("user.home") + "/foodbroker/inputgraph" + "/graphs" +
+      ".json";
+//      FoodBrokerTest.class.getResource("/foodbroker").getFile() +
+//        "/graphs.json";
+    String nodesPath = System.getProperty("user.home") + "/foodbroker/inputgraph" + "/nodes.json";
+//      FoodBrokerTest.class.getResource("/foodbroker").getFile() + "/nodes.json";
+    String edgesPath = System.getProperty("user.home") + "/foodbroker/inputgraph" + "/edges.json";
+//      FoodBrokerTest.class.getResource("/foodbroker").getFile() + "/edges.json";
 
     DataSink dataSink = new JSONDataSink(graphsPath, nodesPath, edgesPath, getConfig());
 
