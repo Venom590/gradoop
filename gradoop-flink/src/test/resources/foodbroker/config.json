@@ -1,16 +1,16 @@
 {
   "MasterData" : {
     "Customer" : {
-      "offset" : 5,
-      "growth" : 2,
+      "offset" : 10,
+      "growth" : 0,
       "good" : 0.4,
-      "bad" : 0.4
+      "bad" : 0.3
     },
     "Employee" : {
-      "offset" : 5,
-      "growth" : 2,
+      "offset" : 10,
+      "growth" : 0,
       "good" : 0.4,
-      "bad" : 0.4
+      "bad" : 0.3
     },
     "Logistics" : {
       "offset" : 3,
@@ -19,7 +19,7 @@
       "bad" : 0.33
     },
     "Product" : {
-      "offset" : 10,
+      "offset" : 50,
       "growth" : 1,
       "good" : 0.33,
       "bad" : 0.33,
@@ -27,21 +27,21 @@
       "maxPrice" : 8.5
     },
     "Vendor" : {
-      "offset" : 5,
-      "growth" : 2,
+      "offset" : 10,
+      "growth" : 0,
       "good" : 0.4,
-      "bad" : 0.4
+      "bad" : 0.3
     }
   },
   "Process" : {
-    "casesPerScaleFactor" : 20,
+    "casesPerScaleFactor" : 200,
     "startDate" : "2014-01-01",
     "endDate" : "2014-12-31"
   },
   "TransactionalData" : {
     "SalesQuotation" : {
       "linesMin" : 1,
-      "linesMax" : 20,
+      "linesMax" : 1,
       "lineQuantityMin" : 1,
       "lineQuantityMax" : 100,
       "salesMargin" : 0.05,

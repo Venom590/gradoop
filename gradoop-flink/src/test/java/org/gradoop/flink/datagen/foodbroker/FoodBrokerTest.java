@@ -152,13 +152,13 @@ public class FoodBrokerTest extends GradoopFlinkTestBase {
 
     GraphCollection cases = generateCollection();
     getExecutionEnvironment().setParallelism(1);
-    String graphsPath = System.getProperty("user.home") + "/foodbroker/inputgraph" + "/graphs" +
+    String graphsPath = System.getProperty("user.home") + "/Dropbox/inputgraph" + "/graphs" +
       ".json";
 //      FoodBrokerTest.class.getResource("/foodbroker").getFile() +
 //        "/graphs.json";
-    String nodesPath = System.getProperty("user.home") + "/foodbroker/inputgraph" + "/nodes.json";
+    String nodesPath = System.getProperty("user.home") + "/Dropbox/inputgraph" + "/nodes.json";
 //      FoodBrokerTest.class.getResource("/foodbroker").getFile() + "/nodes.json";
-    String edgesPath = System.getProperty("user.home") + "/foodbroker/inputgraph" + "/edges.json";
+    String edgesPath = System.getProperty("user.home") + "/Dropbox/inputgraph" + "/edges.json";
 //      FoodBrokerTest.class.getResource("/foodbroker").getFile() + "/edges.json";
 
     DataSink dataSink = new JSONDataSink(graphsPath, nodesPath, edgesPath, getConfig());

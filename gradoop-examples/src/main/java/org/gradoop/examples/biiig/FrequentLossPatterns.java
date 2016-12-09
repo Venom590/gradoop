@@ -40,6 +40,7 @@ import org.gradoop.flink.model.impl.operators.aggregation.functions.sum.Sum;
 import org.gradoop.flink.model.impl.operators.transformation.ApplyTransformation;
 import org.gradoop.flink.util.GradoopFlinkConfig;
 
+import java.io.File;
 import java.math.BigDecimal;
 
 import static java.math.BigDecimal.ROUND_HALF_UP;
@@ -157,14 +158,14 @@ public class FrequentLossPatterns
 
     // (1) read data from source
 
-    String graphHeadPath = FrequentLossPatterns.class
-      .getResource("/data/json/foodbroker/graphs.json").getFile();
+    String graphHeadPath =
+      System.getProperty("user.home") + "/foodbroker" + "/inputgraph" + "/graphs.json";
 
-    String vertexPath = FrequentLossPatterns.class.
-      getResource("/data/json/foodbroker/nodes.json").getFile();
+    String vertexPath =
+      System.getProperty("user.home") + "/foodbroker" + "/inputgraph" + "/nodes.json";
 
-    String edgePath = FrequentLossPatterns.class
-      .getResource("/data/json/foodbroker/edges.json").getFile();
+    String edgePath =
+      System.getProperty("user.home") + "/foodbroker" + "/inputgraph" + "/edges.json";
 
     JSONDataSource dataSource = new JSONDataSource(
       graphHeadPath, vertexPath, edgePath, config);
@@ -182,6 +183,8 @@ public class FrequentLossPatterns
     // (4) select by loss (negative financialResult)
     btgs = btgs.select(
       g -> g.getPropertyValue(RESULT_KEY).getBigDecimal().compareTo(ZERO) < 0);
+    System.err.println("heads: " + btgs.getGraphHeads().count());
+    btgs.getGraphHeads().print();
 
     // (5) relabel vertices and remove vertex and edge properties
 
@@ -193,7 +196,7 @@ public class FrequentLossPatterns
 
     // (6) mine frequent subgraphs
 
-    FSMConfig fsmConfig = new FSMConfig(0.6f, true);
+    FSMConfig fsmConfig = new FSMConfig(0.2f, true);
 
     GraphCollection frequentSubgraphs = btgs
       .callForCollection(new GSpanIterative(fsmConfig));
@@ -219,7 +222,8 @@ public class FrequentLossPatterns
     // (10) write data sink
 
     String outPath =
-      System.getProperty("user.home") + "/lossPatterns_" + Time.now() + ".dot";
+      System.getProperty("user.home") + "/foodbroker/flp_results" +"/lossPatterns_" + Time.now() +
+        ".dot";
 
     new DOTDataSink(outPath, true).write(frequentSubgraphs);
 
