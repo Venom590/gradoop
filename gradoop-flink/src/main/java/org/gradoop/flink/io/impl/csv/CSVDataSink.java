@@ -17,13 +17,28 @@
 
 package org.gradoop.flink.io.impl.csv;
 
+import com.google.common.collect.Lists;
+import org.apache.flink.api.java.DataSet;
+import org.apache.flink.api.java.tuple.Tuple2;
+import org.gradoop.common.model.api.entities.EPGMElement;
+import org.gradoop.common.model.impl.pojo.Edge;
+import org.gradoop.common.model.impl.pojo.GraphHead;
+import org.gradoop.common.model.impl.pojo.Vertex;
 import org.gradoop.flink.io.api.DataSink;
+import org.gradoop.flink.io.impl.csv.functions.EPGMElementToEPGMElementCSVExtension;
+import org.gradoop.flink.io.impl.csv.parser.XmlMetaParser;
+import org.gradoop.flink.io.impl.csv.pojos.CsvExtension;
+import org.gradoop.flink.io.impl.csv.pojos.Datasource;
+import org.gradoop.flink.io.impl.csv.pojos.Domain;
 import org.gradoop.flink.model.impl.GraphCollection;
 import org.gradoop.flink.model.impl.GraphTransactions;
 import org.gradoop.flink.model.impl.LogicalGraph;
 import org.gradoop.flink.util.GradoopFlinkConfig;
+import org.xml.sax.SAXException;
 
+import javax.xml.bind.JAXBException;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Writes an EPGM instance into CSV files. Their format has to be defined
@@ -45,18 +60,92 @@ public class CSVDataSink extends CSVBase implements DataSink {
 
   @Override
   public void write(LogicalGraph logicalGraph) throws IOException {
+    write(GraphCollection.fromGraph(logicalGraph));
+  }
+
+  @Override
+  public void write(GraphCollection graphCollection) throws IOException {
+    DataSet<GraphHead> graphHeads = graphCollection.getGraphHeads();
+    DataSet<Vertex> vertices = graphCollection.getVertices();
+    DataSet<Edge> edges = graphCollection.getEdges();
+
+  // parse the xml file to a datasource and select each csv object
+    Datasource datasource = null;
+    try {
+      datasource = XmlMetaParser.parse(getXsdPath(), getMetaXmlPath());
+    } catch (SAXException | JAXBException e) {
+      e.printStackTrace();
+    }
+    List<CsvExtension> graphHeadList = Lists.newArrayList();
+    List<CsvExtension> vertexList = Lists.newArrayList();
+    List<CsvExtension> edgeList = Lists.newArrayList();
+    if (datasource != null) {
+      for (Domain domain : datasource.getDomain()) {
+        for (CsvExtension csv : domain.getCsv()) {
+          csv.setDomainName(domain.getName());
+          csv.setDatasourceName(datasource.getName());
+          if (csv.getGraphhead() != null) {
+            graphHeadList.add(csv);
+          }
+          if (csv.getVertex() != null) {
+            vertexList.add(csv);
+          }
+          if (csv.getEdge() != null) {
+            edgeList.add(csv);
+          }
+        }
+      }
+    }
+
+    DataSet<Tuple2<GraphHead, CsvExtension>> headTuple = graphHeads
+      .map(new EPGMElementToEPGMElementCSVExtension<GraphHead>(graphHeadList));
+
+    DataSet<Tuple2<Vertex, CsvExtension>> vertexTuple = vertices
+      .map(new EPGMElementToEPGMElementCSVExtension<Vertex>(vertexList));
+
+    DataSet<Tuple2<Edge, CsvExtension>> edgeTuple = edges
+      .map(new EPGMElementToEPGMElementCSVExtension<Edge>(edgeList));
 
   }
 
   @Override
-  public void write(GraphCollection graphCollection) throws
-    IOException {
+  public void write(GraphTransactions graphTransactions) throws IOException {
+    write(GraphCollection.fromTransactions(graphTransactions));
+  }
+
+  private Tuple2<EPGMElement, CsvExtension> createElement(
+    EPGMElement element, List<CsvExtension> csvList) {
+//    String label = element.getLabel();
+    String key = "";
+    if (element.hasProperty("key")) {
+      key = element.getPropertyValue("key").getString();
+      //remove property key
+    } else {
+      // try to create key
+      key = "datasource;" + "domain;" + "class;" + element.getId().toString();
+    }
+
+    for (CsvExtension csvExtension : csvList) {
+      if (key.startsWith(csvExtension.getEdge().getKey().getClazz())) {
+        return new Tuple2<>(element, csvExtension);
+      }
+    }
+    return null;
+
+//    List<String> propertyKeys = Lists.newArrayList();
+//    List<String> propertyValues = Lists.newArrayList();
+//
+//    for (Property property : element.getProperties()) {
+//      propertyKeys.add(property.getKey());
+//      propertyValues.add(property.getValue().getString());
+//    }
+  }
+
+
+  public void createEdge() {
 
   }
 
-  @Override
-  public void write(GraphTransactions graphTransactions) throws
-    IOException {
 
-  }
+
 }
