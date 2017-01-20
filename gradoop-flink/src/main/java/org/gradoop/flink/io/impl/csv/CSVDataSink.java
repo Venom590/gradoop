@@ -18,14 +18,15 @@
 package org.gradoop.flink.io.impl.csv;
 
 import com.google.common.collect.Lists;
+import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.tuple.Tuple2;
-import org.gradoop.common.model.api.entities.EPGMElement;
 import org.gradoop.common.model.impl.pojo.Edge;
 import org.gradoop.common.model.impl.pojo.GraphHead;
 import org.gradoop.common.model.impl.pojo.Vertex;
 import org.gradoop.flink.io.api.DataSink;
-import org.gradoop.flink.io.impl.csv.functions.EPGMElementToEPGMElementCSVExtension;
+import org.gradoop.flink.io.impl.csv.functions.ElementCsvExtensionToCSVString;
+import org.gradoop.flink.io.impl.csv.functions.ElementToElementCSVExtension;
 import org.gradoop.flink.io.impl.csv.parser.XmlMetaParser;
 import org.gradoop.flink.io.impl.csv.pojos.CsvExtension;
 import org.gradoop.flink.io.impl.csv.pojos.Datasource;
@@ -76,35 +77,47 @@ public class CSVDataSink extends CSVBase implements DataSink {
     } catch (SAXException | JAXBException e) {
       e.printStackTrace();
     }
-    List<CsvExtension> graphHeadList = Lists.newArrayList();
-    List<CsvExtension> vertexList = Lists.newArrayList();
-    List<CsvExtension> edgeList = Lists.newArrayList();
+    List<Tuple2<CsvExtension, String>> graphHeadList = Lists.newArrayList();
+    List<Tuple2<CsvExtension, String>> vertexList = Lists.newArrayList();
+    List<Tuple2<CsvExtension, String>> edgeList = Lists.newArrayList();
     if (datasource != null) {
       for (Domain domain : datasource.getDomain()) {
         for (CsvExtension csv : domain.getCsv()) {
           csv.setDomainName(domain.getName());
           csv.setDatasourceName(datasource.getName());
           if (csv.getGraphhead() != null) {
-            graphHeadList.add(csv);
+            graphHeadList.add(new Tuple2<CsvExtension, String>(csv,
+              csv.getGraphhead().getKey().getClazz()));
           }
           if (csv.getVertex() != null) {
-            vertexList.add(csv);
+            vertexList.add(new Tuple2<CsvExtension, String>(csv,
+              csv.getVertex().getKey().getClazz()));
           }
           if (csv.getEdge() != null) {
-            edgeList.add(csv);
+            edgeList.add(new Tuple2<CsvExtension, String>(csv, csv.getEdge().getKey().getClazz()));
           }
         }
       }
     }
 
     DataSet<Tuple2<GraphHead, CsvExtension>> headTuple = graphHeads
-      .map(new EPGMElementToEPGMElementCSVExtension<GraphHead>(graphHeadList));
+      .map(new ElementToElementCSVExtension<GraphHead>(graphHeadList));
+//    try {
+//      headTuple.print();
+//    } catch (Exception e) {
+//      e.printStackTrace();
+//    }
 
-    DataSet<Tuple2<Vertex, CsvExtension>> vertexTuple = vertices
-      .map(new EPGMElementToEPGMElementCSVExtension<Vertex>(vertexList));
+    DataSet<String> headCsv = headTuple
+      .map(new ElementCsvExtensionToCSVString<GraphHead>());
 
-    DataSet<Tuple2<Edge, CsvExtension>> edgeTuple = edges
-      .map(new EPGMElementToEPGMElementCSVExtension<Edge>(edgeList));
+    headCsv.writeAsText(getCsvDir() + "/graphheads.csv");
+
+//    DataSet<Tuple2<Vertex, CsvExtension>> vertexTuple = vertices
+//      .map(new ElementToElementCSVExtension<Vertex>(vertexList));
+//
+//    DataSet<Tuple2<Edge, CsvExtension>> edgeTuple = edges
+//      .map(new ElementToElementCSVExtension<Edge>(edgeList));
 
   }
 
@@ -112,40 +125,4 @@ public class CSVDataSink extends CSVBase implements DataSink {
   public void write(GraphTransactions graphTransactions) throws IOException {
     write(GraphCollection.fromTransactions(graphTransactions));
   }
-
-  private Tuple2<EPGMElement, CsvExtension> createElement(
-    EPGMElement element, List<CsvExtension> csvList) {
-//    String label = element.getLabel();
-    String key = "";
-    if (element.hasProperty("key")) {
-      key = element.getPropertyValue("key").getString();
-      //remove property key
-    } else {
-      // try to create key
-      key = "datasource;" + "domain;" + "class;" + element.getId().toString();
-    }
-
-    for (CsvExtension csvExtension : csvList) {
-      if (key.startsWith(csvExtension.getEdge().getKey().getClazz())) {
-        return new Tuple2<>(element, csvExtension);
-      }
-    }
-    return null;
-
-//    List<String> propertyKeys = Lists.newArrayList();
-//    List<String> propertyValues = Lists.newArrayList();
-//
-//    for (Property property : element.getProperties()) {
-//      propertyKeys.add(property.getKey());
-//      propertyValues.add(property.getValue().getString());
-//    }
-  }
-
-
-  public void createEdge() {
-
-  }
-
-
-
 }

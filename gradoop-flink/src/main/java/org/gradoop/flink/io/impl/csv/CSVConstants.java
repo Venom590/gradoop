@@ -25,6 +25,10 @@ public class CSVConstants {
   /**
    * Separator for 'key' property concatenation.
    */
+  public static final String EDCAPE_SEPARATOR_LINE = "&lsep;";
+  /**
+   * Separator for 'key' property concatenation.
+   */
   public static final String SEPARATOR_KEY = "_";
   /**
    * Replacement string for 'key' property.

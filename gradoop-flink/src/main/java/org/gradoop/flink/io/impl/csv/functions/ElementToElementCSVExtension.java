@@ -23,17 +23,18 @@ import org.gradoop.common.model.impl.pojo.Edge;
 import org.gradoop.common.model.impl.pojo.Element;
 import org.gradoop.common.model.impl.pojo.GraphHead;
 import org.gradoop.common.model.impl.pojo.Vertex;
+import org.gradoop.flink.io.impl.csv.CSVConstants;
 import org.gradoop.flink.io.impl.csv.pojos.CsvExtension;
 
 import java.util.List;
 
 
-public class EPGMElementToEPGMElementCSVExtension<T extends Element>
+public class ElementToElementCSVExtension<T extends Element>
   implements MapFunction<T, Tuple2<T, CsvExtension>> {
 
-  private List<CsvExtension> csvList;
+  private List<Tuple2<CsvExtension, String>> csvList;
 
-  public EPGMElementToEPGMElementCSVExtension(List<CsvExtension> csvList) {
+  public ElementToElementCSVExtension(List<Tuple2<CsvExtension, String>> csvList) {
     this.csvList = csvList;
   }
 
@@ -48,37 +49,28 @@ public class EPGMElementToEPGMElementCSVExtension<T extends Element>
       key = "datasource;" + "domain;" + "class;" + element.getId().toString();
     }
 
-    String csvKey;
-    int type = -1;//0 = graph head, 1 = vertex, 2 = edge
-    if (GraphHead.class.isInstance(element)) {
-      type = 0;
-    }
-    if (Vertex.class.isInstance(element)) {
-      type = 1;
-    }
-    if (Edge.class.isInstance(element)) {
-      type = 2;
-    }
-    for (CsvExtension csvExtension : csvList) {
-      switch (type) {
-        case 0 :
-          if (key.startsWith(csvExtension.getGraphhead().getKey().getClazz())) {
-            return new Tuple2<T, CsvExtension>(element, csvExtension);
-          }
-          break;
-      case 1 :
-        if (key.startsWith(csvExtension.getVertex().getKey().getClazz())) {
-          return new Tuple2<T, CsvExtension>(element, csvExtension);
-        }
-        break;
-      case 2 :
-        if (key.startsWith(csvExtension.getEdge().getKey().getClazz())) {
-          return new Tuple2<T, CsvExtension>(element, csvExtension);
-        }
-        break;
+    for (Tuple2<CsvExtension, String> tuple : csvList) {
+      CsvExtension csvExtension = tuple.f0;
+      String baseKey = createBaseKey(
+        csvExtension.getDatasourceName(), csvExtension.getDomainName(), tuple.f1);
+      if (key.startsWith(baseKey)) {
+        return new Tuple2<T, CsvExtension>(element, csvExtension);
       }
     }
     return null;
   }
 
+
+  private String createBaseKey(String datasource, String domain, String clazz) {
+    StringBuilder baseKey = new StringBuilder();
+    baseKey.append(domain.replaceAll(CSVConstants.SEPARATOR_KEY,
+      CSVConstants.ESCAPE_SEPARATOR_KEY));
+    baseKey.append(CSVConstants.SEPARATOR_KEY);
+    baseKey.append(datasource.replaceAll(
+      CSVConstants.SEPARATOR_KEY, CSVConstants.ESCAPE_SEPARATOR_KEY));
+    baseKey.append(CSVConstants.SEPARATOR_KEY);
+    baseKey.append(clazz.replaceAll(
+      CSVConstants.SEPARATOR_KEY, CSVConstants.ESCAPE_SEPARATOR_KEY));
+    return baseKey.toString();
+  }
 }
