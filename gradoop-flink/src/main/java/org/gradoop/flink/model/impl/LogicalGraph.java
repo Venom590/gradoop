@@ -42,7 +42,9 @@ import org.gradoop.flink.model.impl.operators.equality.GraphEquality;
 import org.gradoop.flink.model.impl.operators.exclusion.Exclusion;
 import org.gradoop.flink.model.impl.operators.grouping.Grouping.GroupingBuilder;
 import org.gradoop.flink.model.impl.operators.grouping.GroupingStrategy;
+import org.gradoop.flink.model.impl.operators.grouping.VertexCentricalGrouping;
 import org.gradoop.flink.model.impl.operators.grouping.functions.aggregation.PropertyValueAggregator;
+import org.gradoop.flink.model.impl.operators.grouping.CentricalGrouping;
 import org.gradoop.flink.model.impl.operators.matching.common.MatchStrategy;
 import org.gradoop.flink.model.impl.operators.matching.common.query.DFSTraverser;
 import org.gradoop.flink.model.impl.operators.matching.single.preserving.explorative.ExplorativePatternMatching;
@@ -367,6 +369,14 @@ public class LogicalGraph extends GraphBase implements LogicalGraphOperators {
   @Override
   public LogicalGraph sampleRandomNodes(float sampleSize) {
     return callForGraph(new RandomNodeSampling(sampleSize));
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public LogicalGraph groupBy(CentricalGrouping centricalGrouping) {
+    return  callForGraph(centricalGrouping.build());
   }
 
   /**
