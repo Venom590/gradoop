@@ -376,7 +376,7 @@ public class LogicalGraph extends GraphBase implements LogicalGraphOperators {
    */
   @Override
   public LogicalGraph groupBy(CentricalGrouping centricalGrouping) {
-    return  callForGraph(centricalGrouping.build());
+    return callForGraph(centricalGrouping);
   }
 
   /**

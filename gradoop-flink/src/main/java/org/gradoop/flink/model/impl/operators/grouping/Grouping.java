@@ -125,6 +125,24 @@ public abstract class Grouping implements UnaryGraphToGraphOperator {
     List<PropertyValueAggregator> vertexAggregators,
     List<String> edgeGroupingKeys, boolean useEdgeLabels,
     List<PropertyValueAggregator> edgeAggregators) {
+//
+//    for (int i = 0; i < vertexGroupingKeys.size(); i++) {
+//      String key = vertexGroupingKeys.get(i);
+//      if (key.equals(Grouping.LABEL_SYMBOL)) {
+//        useVertexLabels = true;
+//        //remove key from list
+//        vertexGroupingKeys.remove(i);
+//      }
+//    }
+//    for (int i = 0; i < edgeGroupingKeys.size(); i++) {
+//      String key = edgeGroupingKeys.get(i);
+//      if (key.equals(Grouping.LABEL_SYMBOL)) {
+//        useEdgeLabels = true;
+//        //remove key from list
+//        edgeGroupingKeys.remove(i);
+//      }
+//    }
+
     this.vertexGroupingKeys = vertexGroupingKeys;
     this.useVertexLabels    = useVertexLabels;
     this.vertexAggregators  = vertexAggregators;
@@ -325,6 +343,11 @@ public abstract class Grouping implements UnaryGraphToGraphOperator {
     private GroupingStrategy strategy;
 
     /**
+     * Centrical grouping strategy.
+     */
+    private GroupingStrategy centricalStrategy;
+
+    /**
      * Property keys to group vertices.
      */
     private List<String> vertexGroupingKeys;
@@ -375,6 +398,18 @@ public abstract class Grouping implements UnaryGraphToGraphOperator {
     public GroupingBuilder setStrategy(GroupingStrategy strategy) {
       Objects.requireNonNull(strategy);
       this.strategy = strategy;
+      return this;
+    }
+
+    /**
+     * Set the grouping strategy. See {@link GroupingStrategy}.
+     *
+     * @param centricalStrategy grouping strategy
+     * @return this builder
+     */
+    public GroupingBuilder setCentricalStrategy(GroupingStrategy centricalStrategy) {
+      Objects.requireNonNull(centricalStrategy);
+      this.centricalStrategy = centricalStrategy;
       return this;
     }
 
@@ -515,6 +550,26 @@ public abstract class Grouping implements UnaryGraphToGraphOperator {
         break;
       default:
         throw new IllegalArgumentException("Unsupported strategy: " + strategy);
+      }
+
+
+      if (centricalStrategy != null) {
+        switch (centricalStrategy) {
+        case VERTEX_CENTRIC:
+          groupingOperator =
+            new VertexCentricalGrouping(vertexGroupingKeys, useVertexLabel,
+              vertexValueAggregators, edgeGroupingKeys, useEdgeLabel,
+              edgeValueAggregators, strategy);
+          break;
+        case EDGE_CENTRIC:
+          groupingOperator =
+            new EdgeCentricalGrouping(vertexGroupingKeys, useVertexLabel,
+              vertexValueAggregators, edgeGroupingKeys, useEdgeLabel,
+              edgeValueAggregators, strategy);
+          break;
+        default:
+          throw new IllegalArgumentException("Unsupported centrical strategy: " + centricalStrategy);
+        }
       }
 
       return groupingOperator;
