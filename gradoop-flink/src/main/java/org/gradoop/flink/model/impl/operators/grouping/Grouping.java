@@ -544,25 +544,22 @@ public abstract class Grouping implements UnaryGraphToGraphOperator {
 
       Grouping groupingOperator;
 
-      switch (strategy) {
-      case GROUP_REDUCE:
-        groupingOperator =
-          new GroupingGroupReduce(vertexGroupingKeys, useVertexLabel,
-            vertexValueAggregators, edgeGroupingKeys, useEdgeLabel,
-            edgeValueAggregators);
-        break;
-      case GROUP_COMBINE:
-        groupingOperator =
-          new GroupingGroupCombine(vertexGroupingKeys, useVertexLabel,
-            vertexValueAggregators, edgeGroupingKeys, useEdgeLabel,
-            edgeValueAggregators);
-        break;
-      default:
-        throw new IllegalArgumentException("Unsupported strategy: " + strategy);
-      }
-
-
-      if (centricalStrategy != null) {
+      if (centricalStrategy == null) {
+        switch (strategy) {
+        case GROUP_REDUCE:
+          groupingOperator =
+            new GroupingGroupReduce(vertexGroupingKeys, useVertexLabel, vertexValueAggregators,
+              edgeGroupingKeys, useEdgeLabel, edgeValueAggregators);
+          break;
+        case GROUP_COMBINE:
+          groupingOperator =
+            new GroupingGroupCombine(vertexGroupingKeys, useVertexLabel, vertexValueAggregators,
+              edgeGroupingKeys, useEdgeLabel, edgeValueAggregators);
+          break;
+        default:
+          throw new IllegalArgumentException("Unsupported strategy: " + strategy);
+        }
+      } else {
         switch (centricalStrategy) {
         case VERTEX_CENTRIC:
           groupingOperator =
