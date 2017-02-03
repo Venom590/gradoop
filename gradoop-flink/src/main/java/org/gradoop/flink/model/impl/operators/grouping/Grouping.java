@@ -528,9 +528,18 @@ public abstract class Grouping implements UnaryGraphToGraphOperator {
      * @return grouping operator instance
      */
     public Grouping build() {
-      if (vertexGroupingKeys.isEmpty() && !useVertexLabel) {
-        throw new IllegalArgumentException(
-          "Provide vertex key(s) and/or use vertex labels for grouping.");
+      //new grouping approach is edge centric
+      if (centricalStrategy != null && centricalStrategy.equals(GroupingStrategy.EDGE_CENTRIC)) {
+        if (edgeGroupingKeys.isEmpty() && !useEdgeLabel) {
+          throw new IllegalArgumentException(
+            "Provide edge key(s) and/or use edge labels for grouping.");
+        }
+      //old grouping or new grouping and vertex centric
+      } else {
+        if (vertexGroupingKeys.isEmpty() && !useVertexLabel) {
+          throw new IllegalArgumentException(
+            "Provide vertex key(s) and/or use vertex labels for grouping.");
+        }
       }
 
       Grouping groupingOperator;
