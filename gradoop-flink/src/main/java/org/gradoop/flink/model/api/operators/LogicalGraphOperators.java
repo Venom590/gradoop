@@ -282,6 +282,36 @@ public interface LogicalGraphOperators extends GraphBaseOperators {
     GroupingStrategy groupingStrategy);
 
   /**
+   * Creates a condensed version of the logical graph by grouping vertices and edges based on given
+   * property keys.
+   *
+   * Vertices are grouped by the given property keys. Edges are implicitly grouped along with their
+   * incident vertices and explicitly by the specified edge grouping keys. Furthermore, one can
+   * specify sets of vertex and edge aggregate functions which are applied on vertices/edges
+   * represented by the same super vertex/edge.
+   *
+   * One needs to at least specify a list of vertex grouping keys. Any other argument may be
+   * {@code null}.
+   *
+   * Note: To group vertices/edges by their type label, one needs to add the specific symbol
+   * {@link Grouping#LABEL_SYMBOL} to the respective grouping keys.
+   *
+   * @param vertexGroupingKeys property keys to group vertices
+   * @param vertexAggregateFunctions aggregate functions to apply on super vertices
+   * @param edgeGroupingKeys property keys to group edges
+   * @param edgeAggregateFunctions aggregate functions to apply on super edges
+   * @param groupingStrategy execution strategy for grouping
+   * @param centricalGroupingStrategy centrical execution strategy: vertex or edge centric
+   *
+   * @return summary graph
+   * @see Grouping
+   */
+  LogicalGraph groupBy(
+    List<String> vertexGroupingKeys, List<PropertyValueAggregator> vertexAggregateFunctions,
+    List<String> edgeGroupingKeys, List<PropertyValueAggregator> edgeAggregateFunctions,
+    GroupingStrategy groupingStrategy, GroupingStrategy centricalGroupingStrategy);
+
+  /**
    * Checks, if another logical graph contains exactly the same vertices and
    * edges (by id) as this graph.
    *
