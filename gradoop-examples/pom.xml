@@ -90,5 +90,11 @@
             <artifactId>log4j</artifactId>
             <scope>compile</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.s1ck</groupId>
+            <artifactId>ldbc-flink-import</artifactId>
+            <version>0.1</version>
+        </dependency>
     </dependencies>
 </project>
