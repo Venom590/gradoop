@@ -19,8 +19,17 @@ package org.gradoop.examples.sna;
 
 import com.google.common.base.Preconditions;
 import org.apache.flink.api.common.ProgramDescription;
+import org.apache.flink.api.common.functions.MapFunction;
+import org.apache.flink.api.common.functions.RichMapFunction;
 import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.ExecutionEnvironment;
+import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.configuration.Configuration;
+import org.gradoop.common.model.impl.id.GradoopId;
+import org.gradoop.common.model.impl.pojo.Edge;
+import org.gradoop.common.model.impl.pojo.EdgeFactory;
+import org.gradoop.common.model.impl.pojo.Vertex;
+import org.gradoop.common.model.impl.pojo.VertexFactory;
 import org.gradoop.examples.AbstractRunner;
 import org.gradoop.flink.io.impl.dot.DOTDataSink;
 import org.gradoop.flink.model.impl.LogicalGraph;
@@ -31,6 +40,8 @@ import org.s1ck.ldbc.tuples.LDBCEdge;
 import org.s1ck.ldbc.tuples.LDBCVertex;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 /**
  * The benchmark program executes the following workflow:
@@ -78,6 +89,48 @@ public class LDBCToDot extends AbstractRunner implements
     DataSet<LDBCVertex> vertices = ldbcToFlink.getVertices();
     DataSet<LDBCEdge> edges = ldbcToFlink.getEdges();
 
+    DataSet<Vertex> epgmVertex = vertices
+      .map(new MapFunction<LDBCVertex, Vertex>() {
+        @Override
+        public Vertex map(LDBCVertex ldbcVertex) throws Exception {
+          Vertex vertex = new VertexFactory().createVertex(ldbcVertex.getLabel());
+          vertex.setProperty("id", ldbcVertex.getVertexId());
+          for (Map.Entry<String, Object> entry : ldbcVertex.getProperties().entrySet()) {
+            vertex.setProperty(entry.getKey(), entry.getValue());
+          }
+          return vertex;
+        }
+      });
+    DataSet<Tuple2<String, GradoopId>> ids = epgmVertex
+      .map(new MapFunction<Vertex, Tuple2<String, GradoopId>>() {
+        @Override
+        public Tuple2<String, GradoopId> map(Vertex vertex) throws Exception {
+          return new Tuple2<String, GradoopId>(vertex.getPropertyValue("id").getString(), vertex.getId());
+        }
+      });
+
+    DataSet<Edge> epgmEdge = edges
+      .map(new RichMapFunction<LDBCEdge, Edge>() {
+        @Override
+        public void open(Configuration parameters) throws Exception {
+          super.open(parameters);
+          List<Vertex> vertices = getRuntimeContext().getBroadcastVariable("vertices");
+        }
+
+        @Override
+        public Edge map(LDBCEdge ldbcEdge) throws Exception {
+          Edge edge = new EdgeFactory().createEdge(ldbcEdge.getLabel(), GradoopId.NULL_VALUE,
+            GradoopId.NULL_VALUE);
+          for (Map.Entry<String, Object> entry : ldbcEdge.getProperties().entrySet()) {
+            edge.setProperty(entry.getKey(), entry.getValue());
+          }
+          return edge;
+        }
+      });
+
+
+
+    System.out.println("vertices = " + vertices.collect().size());
     for (LDBCVertex ldbcVertex : vertices.collect()) {
       System.out.println("ldbcVertex = " + ldbcVertex);
     }
