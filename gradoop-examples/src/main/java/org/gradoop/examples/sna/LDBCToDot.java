@@ -19,11 +19,16 @@ package org.gradoop.examples.sna;
 
 import com.google.common.base.Preconditions;
 import org.apache.flink.api.common.ProgramDescription;
+import org.apache.flink.api.java.DataSet;
+import org.apache.flink.api.java.ExecutionEnvironment;
 import org.gradoop.examples.AbstractRunner;
 import org.gradoop.flink.io.impl.dot.DOTDataSink;
 import org.gradoop.flink.model.impl.LogicalGraph;
 import org.gradoop.flink.model.impl.operators.aggregation.functions.count.EdgeCount;
 import org.gradoop.flink.model.impl.operators.aggregation.functions.count.VertexCount;
+import org.s1ck.ldbc.LDBCToFlink;
+import org.s1ck.ldbc.tuples.LDBCEdge;
+import org.s1ck.ldbc.tuples.LDBCVertex;
 
 import java.util.Arrays;
 
@@ -66,10 +71,21 @@ public class LDBCToDot extends AbstractRunner implements
     String inputDir  = "/home/stephan/programs/ldbc_snb_datagen/social_network/";//args[0];
     String outputDir = "/home/stephan/programs/";//args[1];
 
-    LogicalGraph epgmDatabase = readLogicalGraph(inputDir);
 
+    LDBCToFlink ldbcToFlink = new LDBCToFlink(inputDir,
+      ExecutionEnvironment.getExecutionEnvironment());
 
-    writeDotGraph(epgmDatabase, outputDir);
+    DataSet<LDBCVertex> vertices = ldbcToFlink.getVertices();
+    DataSet<LDBCEdge> edges = ldbcToFlink.getEdges();
+
+    for (LDBCVertex ldbcVertex : vertices.collect()) {
+      System.out.println("ldbcVertex = " + ldbcVertex);
+    }
+
+//    LogicalGraph epgmDatabase = readLogicalGraph(inputDir);
+//
+//
+//    writeDotGraph(epgmDatabase, outputDir);
   }
 
   protected static void writeDotGraph(LogicalGraph graph, String directory)
