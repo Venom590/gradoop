@@ -32,13 +32,17 @@ import org.gradoop.common.model.impl.pojo.Vertex;
 import org.gradoop.common.model.impl.pojo.VertexFactory;
 import org.gradoop.examples.AbstractRunner;
 import org.gradoop.flink.io.impl.dot.DOTDataSink;
+import org.gradoop.flink.io.impl.json.JSONDataSink;
+import org.gradoop.flink.model.impl.GraphCollection;
 import org.gradoop.flink.model.impl.LogicalGraph;
 import org.gradoop.flink.model.impl.operators.aggregation.functions.count.EdgeCount;
 import org.gradoop.flink.model.impl.operators.aggregation.functions.count.VertexCount;
+import org.gradoop.flink.util.GradoopFlinkConfig;
 import org.s1ck.ldbc.LDBCToFlink;
 import org.s1ck.ldbc.tuples.LDBCEdge;
 import org.s1ck.ldbc.tuples.LDBCVertex;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -79,11 +83,17 @@ public class LDBCToDot extends AbstractRunner implements
   public static void main(String[] args) throws Exception {
 //    Preconditions.checkArgument(
 //      args.length == 2, "input dir and output dir required");
-    String inputDir  = "/home/stephan/programs/ldbc_snb_datagen/social_network/";//args[0];
-    String outputDir = "/home/stephan/programs/";//args[1];
+//    String inputDir  = "/home/stephan/programs/ldbc_snb_datagen/social_network/";//args[0];
+//    String outputDir = "/home/stephan/programs/";//args[1];
+    String inputDir = "C:\\Users\\Stephan\\Desktop\\ldbc_snb_datagen\\social_network";
+    String outputDir = "C:\\Users\\Stephan\\Desktop\\ldbcout";
+    File file = new File(inputDir);
+    if (file.exists()) {
+      System.out.println("file.getPath() = " + file.getPath());
+    }
+    System.out.println("file = " + file.isDirectory());
 
-
-    LDBCToFlink ldbcToFlink = new LDBCToFlink(inputDir,
+    LDBCToFlink ldbcToFlink = new LDBCToFlink(file.getPath(),
       ExecutionEnvironment.getExecutionEnvironment());
 
     DataSet<LDBCVertex> vertices = ldbcToFlink.getVertices();
@@ -128,12 +138,19 @@ public class LDBCToDot extends AbstractRunner implements
         }
       });
 
+    GradoopFlinkConfig config = GradoopFlinkConfig.createConfig(getExecutionEnvironment());
+    LogicalGraph lg = LogicalGraph.fromDataSets(epgmVertex,epgmEdge,config);
 
+    lg.writeTo(new JSONDataSink(outputDir+"\\graph1.json", outputDir+"\\vertex1.json",
+      outputDir+"\\edge1.json",config));
+    getExecutionEnvironment().setParallelism(1);
+getExecutionEnvironment().execute();
+//    vertices.print();
 
-    System.out.println("vertices = " + vertices.collect().size());
-    for (LDBCVertex ldbcVertex : vertices.collect()) {
-      System.out.println("ldbcVertex = " + ldbcVertex);
-    }
+//    System.out.println("vertices = " + vertices.collect().size());
+//    for (LDBCVertex ldbcVertex : vertices.collect()) {
+//      System.out.println("ldbcVertex = " + ldbcVertex);
+//    }
 
 //    LogicalGraph epgmDatabase = readLogicalGraph(inputDir);
 //
