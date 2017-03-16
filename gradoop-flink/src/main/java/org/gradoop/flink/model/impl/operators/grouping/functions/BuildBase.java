@@ -34,7 +34,7 @@ import java.util.List;
 /**
  * Encapsulates logic that is used for building summarized vertices and edges.
  */
-abstract class BuildBase implements Serializable {
+public abstract class BuildBase implements Serializable {
 
   /**
    * Class version for serialization.
