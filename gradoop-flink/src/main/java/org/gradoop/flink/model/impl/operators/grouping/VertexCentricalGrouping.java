@@ -60,9 +60,6 @@ public class VertexCentricalGrouping extends CentricalGrouping {
 
 
   protected DataSet<VertexGroupItem> getVerticesForGrouping(DataSet<Vertex> vertices) {
-    System.out.println("-");
-    System.out.println("-");
-    System.out.println("-");
     return vertices
       // map vertex to vertex group item
       .map(new BuildVertexGroupItem(getVertexGroupingKeys(), useVertexLabels(),
