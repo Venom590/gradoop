@@ -17,6 +17,13 @@
 
 package org.gradoop.flink.model.impl.operators.grouping;
 
+import com.google.common.collect.Lists;
+import org.apache.flink.api.java.io.LocalCollectionOutputFormat;
+import org.gradoop.common.model.impl.pojo.Edge;
+import org.gradoop.common.model.impl.pojo.GraphHead;
+import org.gradoop.common.model.impl.pojo.Vertex;
+import org.gradoop.flink.io.api.DataSource;
+import org.gradoop.flink.io.impl.json.JSONDataSource;
 import org.gradoop.flink.model.GradoopFlinkTestBase;
 import org.gradoop.flink.model.impl.LogicalGraph;
 import org.gradoop.flink.model.impl.operators.grouping.Grouping.GroupingBuilder;
@@ -24,12 +31,16 @@ import org.gradoop.flink.model.impl.operators.grouping.functions.aggregation.Cou
 import org.gradoop.flink.model.impl.operators.grouping.functions.aggregation.MaxAggregator;
 import org.gradoop.flink.model.impl.operators.grouping.functions.aggregation.MinAggregator;
 import org.gradoop.flink.model.impl.operators.grouping.functions.aggregation.SumAggregator;
+import org.gradoop.flink.model.impl.operators.grouping.tuples.labelspecific.VertexLabelGroup;
 import org.gradoop.flink.util.FlinkAsciiGraphLoader;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
 
 import static org.gradoop.common.util.GConstants.NULL_STRING;
+import static org.junit.Assert.assertEquals;
 
 public abstract class VertexCentricGroupingTestBase extends GradoopFlinkTestBase {
   
@@ -1380,5 +1391,60 @@ public abstract class VertexCentricGroupingTestBase extends GradoopFlinkTestBase
 
     collectAndAssertTrue(
       output.equalsByElementData(loader.getLogicalGraphByVariable("expected")));
+  }
+
+  @Test
+  public void testLabelSpecific() throws Exception {
+    String graphFile =
+      EdgeCentricGroupingTestBase.class.getResource("/data/grouping/labelspecific/graphs.json")
+        .getFile();
+    String vertexFile =
+      EdgeCentricGroupingTestBase.class.getResource("/data/grouping/labelspecific/nodes.json").getFile();
+    String edgeFile =
+      EdgeCentricGroupingTestBase.class.getResource("/data/grouping/labelspecific/edges.json").getFile();
+
+    DataSource dataSource = new JSONDataSource(graphFile, vertexFile, edgeFile, config);
+
+
+    LogicalGraph output = new Grouping.GroupingBuilder()
+      .useVertexLabel(true)
+//      .addVertexGroupingKey("topic")
+      .addVertexLabelGroups(
+        Arrays.asList(new VertexLabelGroup("User", "gender")))//, new VertexLabelGroup("User",
+          // "age")))
+      .addVertexAggregator(new CountAggregator("vertexCount"))
+      .addEdgeAggregator(new CountAggregator("edgeCount"))
+      .setStrategy(getStrategy())
+      .setCentricalStrategy(GroupingStrategy.VERTEX_CENTRIC)
+      .build()
+      .execute(dataSource.getLogicalGraph());
+
+
+
+
+    Collection<GraphHead> graphHeads = Lists.newArrayList();
+    Collection<Vertex> vertices = Lists.newArrayList();
+    Collection<Edge> edges = Lists.newArrayList();
+
+    output.getGraphHead().output(new LocalCollectionOutputFormat<>(graphHeads));
+    output.getVertices().output(new LocalCollectionOutputFormat<>(vertices));
+    output.getEdges().output(new LocalCollectionOutputFormat<>(edges));
+
+    getExecutionEnvironment().setParallelism(1);
+    getExecutionEnvironment().execute();
+
+    System.out.println("vertices = ");
+    for (Vertex vertex : vertices) {
+      System.out.println("\t " + vertex);
+    }
+
+    System.out.println("edges = ");
+    for (Edge edge : edges) {
+      System.out.println("\t " + edge);
+    }
+
+    assertEquals("Wrong graph count", 1, graphHeads.size());
+    assertEquals("Wrong vertex count", 6, vertices.size());
+    assertEquals("Wrong edge count", 15, edges.size());
   }
 }

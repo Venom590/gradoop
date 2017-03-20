@@ -58,14 +58,21 @@ public class VertexCentricalGrouping extends CentricalGrouping {
     Objects.requireNonNull(getGroupingStrategy(), "missing vertex grouping strategy");
   }
 
-  protected LogicalGraph groupReduce(LogicalGraph graph) {
-    DataSet<VertexGroupItem> verticesForGrouping = graph.getVertices()
+
+  protected DataSet<VertexGroupItem> getVerticesForGrouping(DataSet<Vertex> vertices) {
+    System.out.println("-");
+    System.out.println("-");
+    System.out.println("-");
+    return vertices
       // map vertex to vertex group item
       .map(new BuildVertexGroupItem(getVertexGroupingKeys(), useVertexLabels(),
         getVertexAggregators()));
+  }
 
+  protected LogicalGraph groupReduce(LogicalGraph graph) {
     // group vertices by label / properties / both
-    DataSet<VertexGroupItem> vertexGroupItems = groupVertices(verticesForGrouping)
+    DataSet<VertexGroupItem> vertexGroupItems = groupVertices(
+      getVerticesForGrouping(graph.getVertices()))
       // apply aggregate function
       .reduceGroup(new ReduceVertexGroupItems(useVertexLabels(), getVertexAggregators()));
 
@@ -89,13 +96,10 @@ public class VertexCentricalGrouping extends CentricalGrouping {
   }
 
   protected LogicalGraph groupCombine(LogicalGraph graph) {
-    // map vertex to vertex group item
-    DataSet<VertexGroupItem> verticesForGrouping = graph.getVertices()
-      .map(new BuildVertexGroupItem(getVertexGroupingKeys(),
-        useVertexLabels(), getVertexAggregators()));
 
     // group vertices by label / properties / both
-    DataSet<VertexGroupItem> combinedVertexGroupItems = groupVertices(verticesForGrouping)
+    DataSet<VertexGroupItem> combinedVertexGroupItems = groupVertices(
+      getVerticesForGrouping(graph.getVertices()))
       // apply aggregate function per combined partition
       .combineGroup(new CombineVertexGroupItems(useVertexLabels(), getVertexAggregators()));
 

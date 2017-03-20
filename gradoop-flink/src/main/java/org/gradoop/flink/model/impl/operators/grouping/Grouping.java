@@ -29,6 +29,7 @@ import org.gradoop.flink.model.impl.operators.grouping.functions.vertexcentric.B
 import org.gradoop.flink.model.impl.operators.grouping.functions.vertexcentric.CombineEdgeGroupItems;
 import org.gradoop.flink.model.impl.operators.grouping.functions.vertexcentric.ReduceEdgeGroupItems;
 import org.gradoop.flink.model.impl.operators.grouping.functions.vertexcentric.UpdateEdgeGroupItem;
+import org.gradoop.flink.model.impl.operators.grouping.tuples.labelspecific.VertexLabelGroup;
 import org.gradoop.flink.model.impl.operators.grouping.tuples.vertexcentric.EdgeGroupItem;
 import org.gradoop.flink.model.impl.operators.grouping.tuples.edgecentric.SuperEdgeGroupItem;
 import org.gradoop.flink.model.impl.operators.grouping.tuples.vertexcentric.VertexGroupItem;
@@ -449,6 +450,8 @@ public abstract class Grouping implements UnaryGraphToGraphOperator {
      */
     private List<PropertyValueAggregator> edgeValueAggregators;
 
+    private List<VertexLabelGroup> vertexLabelGroups;
+
     /**
      * Creates a new grouping builder
      */
@@ -461,6 +464,7 @@ public abstract class Grouping implements UnaryGraphToGraphOperator {
       this.useEdgeTarget          = false;
       this.vertexValueAggregators = new ArrayList<>();
       this.edgeValueAggregators   = new ArrayList<>();
+      this.vertexLabelGroups = new ArrayList<>();
     }
 
     /**
@@ -549,6 +553,25 @@ public abstract class Grouping implements UnaryGraphToGraphOperator {
         this.addEdgeGroupingKey(key);
       }
       return this;
+    }
+
+
+    public GroupingBuilder addVertexLabelGroup(VertexLabelGroup vertexLabelGroup) {
+      Objects.requireNonNull(vertexLabelGroup);
+      vertexLabelGroups.add(vertexLabelGroup);
+      return this;
+    }
+
+    public GroupingBuilder addVertexLabelGroups(List<VertexLabelGroup> vertexLabelGroups) {
+      Objects.requireNonNull(vertexLabelGroups);
+      for (VertexLabelGroup vertexLabelGroup : vertexLabelGroups) {
+        this.addVertexLabelGroup(vertexLabelGroup);
+      }
+      return this;
+    }
+
+    public boolean useVertexLabelGroup() {
+      return !vertexLabelGroups.isEmpty();
     }
 
     /**
@@ -662,10 +685,16 @@ public abstract class Grouping implements UnaryGraphToGraphOperator {
       } else {
         switch (centricalStrategy) {
         case VERTEX_CENTRIC:
-          groupingOperator =
-            new VertexCentricalGrouping(vertexGroupingKeys, useVertexLabel,
+          if (useVertexLabelGroup()) {
+            groupingOperator = new LabelSpecificGrouping(vertexGroupingKeys, useVertexLabel,
               vertexValueAggregators, edgeGroupingKeys, useEdgeLabel,
-              edgeValueAggregators, strategy);
+              edgeValueAggregators, strategy, vertexLabelGroups);
+          } else {
+            groupingOperator =
+              new VertexCentricalGrouping(vertexGroupingKeys, useVertexLabel,
+                vertexValueAggregators, edgeGroupingKeys, useEdgeLabel,
+                edgeValueAggregators, strategy);
+          }
           break;
         case EDGE_CENTRIC:
           groupingOperator =
