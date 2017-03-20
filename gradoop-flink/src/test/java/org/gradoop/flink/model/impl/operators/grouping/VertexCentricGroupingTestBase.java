@@ -18,6 +18,7 @@
 package org.gradoop.flink.model.impl.operators.grouping;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import org.apache.flink.api.java.io.LocalCollectionOutputFormat;
 import org.gradoop.common.model.impl.pojo.Edge;
 import org.gradoop.common.model.impl.pojo.GraphHead;
@@ -1412,6 +1413,8 @@ public abstract class VertexCentricGroupingTestBase extends GradoopFlinkTestBase
       .addVertexLabelGroups(
         Arrays.asList(new VertexLabelGroup("User", "gender")))//, new VertexLabelGroup("User",
           // "age")))
+      .addVertexLabelGroups(Arrays.asList(new VertexLabelGroup("User", Sets.newHashSet("gender",
+        "age"))))
       .addVertexAggregator(new CountAggregator("vertexCount"))
       .addEdgeAggregator(new CountAggregator("edgeCount"))
       .setStrategy(getStrategy())

@@ -111,13 +111,29 @@ public class BuildLabelSpecificVertexGroupItem
         reuseVertexGroupItem.setGroupingValues(PropertyValueList.fromPropertyValues(values));
         collector.collect(reuseVertexGroupItem);
         values.clear();
-        System.out.println("reuseVertexGroupItem = " + reuseVertexGroupItem);
+        System.out.println("1 - reuseVertexGroupItem = " + reuseVertexGroupItem);
       }
     }
     if (!usedVertexLabelGroup) {
       reuseVertexGroupItem.setGroupingValues(getGroupProperties(vertex));
       collector.collect(reuseVertexGroupItem);
-      System.out.println("reuseVertexGroupItem = " + reuseVertexGroupItem);
+      System.out.println("2 - reuseVertexGroupItem = " + reuseVertexGroupItem);
+    }
+  }
+
+  @Override
+  protected PropertyValueList getGroupProperties(EPGMAttributed attributed) throws IOException {
+    PropertyValueList propertyValues = super.getGroupProperties(attributed);
+    if (!propertyValues.iterator().hasNext()) {
+      List<PropertyValue> values =
+        Lists.newArrayListWithCapacity(attributed.getPropertyCount());
+      //TODO foreach über groups und für jede group eine null value - und wenn super nicht leer ist
+      //muss trotzdem für die groups die nullvalue rein
+
+      values.add(PropertyValue.NULL_VALUE);
+      return PropertyValueList.fromPropertyValues(values);
+    } else {
+      return propertyValues;
     }
   }
 }
