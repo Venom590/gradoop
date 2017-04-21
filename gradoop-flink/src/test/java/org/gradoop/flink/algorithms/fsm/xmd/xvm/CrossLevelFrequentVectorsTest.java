@@ -1,4 +1,4 @@
-package org.gradoop.flink.algorithms.fsm.cross_level.xfi;
+package org.gradoop.flink.algorithms.fsm.xmd.xvm;
 
 import org.junit.Test;
 

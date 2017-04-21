@@ -1,9 +1,9 @@
-package org.gradoop.flink.algorithms.fsm.cross_level.xfi;
+package org.gradoop.flink.algorithms.fsm.xmd.xvm;
 
 public class CrossLevelFrequentVectorsTopDown implements CrossLevelFrequentVectors {
 
   @Override
-  public int[][][] mine(int[][][] transactions, float minSupport) {
+  public int[][][] mine(int[][][] vectors, float minSupport) {
     return new int[0][][];
   }
 }
