@@ -4,6 +4,6 @@ public class CrossLevelFrequentVectorsTopDown implements CrossLevelFrequentVecto
 
   @Override
   public int[][][] mine(int[][][] transactions, float minSupport) {
-    return new int[0][];
+    return new int[0][][];
   }
 }

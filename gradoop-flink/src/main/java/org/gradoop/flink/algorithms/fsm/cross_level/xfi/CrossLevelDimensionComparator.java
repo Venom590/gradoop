@@ -11,7 +11,7 @@ public class CrossLevelDimensionComparator implements Comparator<int[]>{
 
     if (comparison == 0) {
       for (int i = 0; i < a.length; i++) {
-        comparison = a[i] = b[i];
+        comparison = a[i] - b[i];
 
         if (comparison != 0) {
           break;
