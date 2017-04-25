@@ -1,8 +1,10 @@
 package org.gradoop.flink.algorithms.fsm.xmd.xvm;
 
+import org.gradoop.flink.model.impl.tuples.WithCount;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Objects;
 
 import static org.junit.Assert.assertEquals;
@@ -23,15 +25,15 @@ public class CrossLevelFrequentVectorsTest {
 
     CrossLevelFrequentVectors miner = new CrossLevelFrequentVectorsBottomUp();
 
-    int[][][] result = miner.mine(database, 3);
+    Collection<WithCount<int[][]>> result = miner.mine(database, 3);
 
-    assertEquals(expectedResult.length, result.length);
+    assertEquals(expectedResult.length, result.size());
 
     for (int[][] expected : expectedResult) {
       boolean found = false;
 
-      for (int[][] actual : result) {
-        found = equal(expected, actual);
+      for (WithCount<int[][]> actual : result) {
+        found = equal(expected, actual.getObject());
       }
 
       assertTrue(found);
