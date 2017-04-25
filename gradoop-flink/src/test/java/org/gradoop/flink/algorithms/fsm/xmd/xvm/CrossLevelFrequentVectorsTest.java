@@ -23,7 +23,7 @@ public class CrossLevelFrequentVectorsTest {
 
     CrossLevelFrequentVectors miner = new CrossLevelFrequentVectorsBottomUp();
 
-    int[][][] result = miner.mine(database, 1.0f);
+    int[][][] result = miner.mine(database, 3);
 
     assertEquals(expectedResult.length, result.length);
 

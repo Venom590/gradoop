@@ -1,59 +1,75 @@
 package org.gradoop.flink.algorithms.fsm.xmd.xvm;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.gradoop.common.util.IntArrayUtils;
 
 import java.util.Arrays;
 import java.util.Objects;
 
 public class CrossLevelFrequentVectorsBottomUp implements CrossLevelFrequentVectors {
 
+  private int dimCount;
+  private int[] schema;
+
   private final CrossLevelVectorComparator vectorComparator = new CrossLevelVectorComparator();
   private int[][][] patterns;
   private int[] frequencies;
+  private int iteration;
 
   @Override
-  public int[][][] mine(int[][][] currentLevel, float minSupport) {
+  public int[][][] mine(int[][][] currentLevel, int minFrequency) {
     patterns = new int[0][][];
     frequencies = new int[0];
 
+    extractSchema(currentLevel);
+
     // while not reached root
-    if (currentLevel.length > 1) {
+    while (iteration > 0) {
       currentLevel = countChildrenAndGetParents(currentLevel);
-
-
-      int[][] root = getRoot(currentLevel[0]);
-
-
+      iteration--;
     }
+
+//    System.out.println(IntArrayUtils.toString(patterns));
+//    System.out.println(IntArrayUtils.toString(frequencies));
+
 
     return patterns;
   }
 
+  private void extractSchema(int[][][] data) {
+    int[][] sample = data[0];
+    dimCount = sample.length;
+    schema = new int[dimCount];
+    iteration = 0;
+
+    for (int dim = 0; dim < dimCount; dim++) {
+      int levelCount = sample[dim].length;
+      schema[dim] = levelCount;
+      iteration += levelCount;
+    }
+  }
+
   private int[][][] countChildrenAndGetParents(int[][][] children) {
+    System.out.println("**** " + iteration + " : " + IntArrayUtils.toString(frequencies) + " ****");
+
     int[][][] parents = new int[0][][];
 
     Arrays.sort(children, vectorComparator);
 
-    int[][] last = children[0];
-    int [][] current = new int[0][];
-    int frequency = 1;
+    int p = patterns.length - 1;
+    int[][] last = null;
 
-    for (int i = 1; i < children.length; i++) {
-       current = children[i];
-
-      if(Objects.deepEquals(last, current)) {
-        frequency++;
+    for (int[][] child : children) {
+      if (Objects.deepEquals(last, child)) {
+        frequencies[p]++;
       } else {
-        store(last, frequency);
-
-        parents = ArrayUtils.addAll(parents, generalize(current));
-
-        last = current;
-        frequency = 1;
+        last = child;
+        parents = ArrayUtils.addAll(parents, generalize(last));
+        patterns = ArrayUtils.add(patterns, last);
+        frequencies = ArrayUtils.add(frequencies, 1);
+        p++;
       }
     }
-
-    store(current, frequency);
 
     return parents;
   }
@@ -61,34 +77,37 @@ public class CrossLevelFrequentVectorsBottomUp implements CrossLevelFrequentVect
   private int[][][] generalize(int[][] child) {
     int[][][] parents = new int[0][][];
 
-    // TODO: constrained generalizations
+    // for each dimension starting from the right hand side
+    for (int dim = dimCount - 1; dim >= 0; dim--) {
+      int levelCount = schema[dim];
+      int[] dimValues = child[dim];
 
-    return parents;
-  }
+      // check, if dimension was already generalized
+      int lastGenLevel = ArrayUtils.indexOf(dimValues, 0);
 
-  private void store(int[][] last, int frequency) {
-    patterns = ArrayUtils.add(patterns, last);
-    frequencies = ArrayUtils.add(frequencies, frequency);
-  }
+      // if further generalization is possible
+      if (lastGenLevel != 0) {
 
-  private int[][] getRoot(int[][] sample) {
+        // either next upper level (prior generalization) or base level (base value)
+        int genLevel = (lastGenLevel > 0 ? lastGenLevel : levelCount) - 1;
 
-    int vectorLength = sample.length;
-    int[][] vector = new int[vectorLength][];
+        int[][] parent = IntArrayUtils.deepCopy(child);
+        parent[dim][genLevel] = 0;
+        parents = ArrayUtils.add(parents, parent);
 
-
-    for (int i = 0; i < vectorLength; i++) {
-
-      int fieldLength = sample[i].length;
-      int[] field = new int[fieldLength];
-
-      for (int j = 0; j < fieldLength; j++) {
-        field[j] = 0;
+        // Pruning: stop, if dimension was already generalized before
+        if (lastGenLevel > 0) {
+          break;
+        }
       }
-      vector[i] = field;
     }
 
+    System.out.println("----------------------------");
+    System.out.println(IntArrayUtils.toString(child));
+    System.out.println("=>");
+    System.out.println(IntArrayUtils.toString(parents));
 
-    return vector;
+
+    return parents;
   }
 }
