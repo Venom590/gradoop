@@ -1,5 +1,6 @@
 package org.gradoop.flink.algorithms.fsm.xmd.xvm;
 
+import org.gradoop.common.util.IntArrayUtils;
 import org.gradoop.flink.model.impl.tuples.WithCount;
 import org.junit.Test;
 
@@ -33,7 +34,11 @@ public class CrossLevelFrequentVectorsTest {
       boolean found = false;
 
       for (WithCount<int[][]> actual : result) {
-        found = equal(expected, actual.getObject());
+        found = Objects.deepEquals(expected, actual.getObject());
+
+        if (found) {
+          break;
+        }
       }
 
       assertTrue(found);

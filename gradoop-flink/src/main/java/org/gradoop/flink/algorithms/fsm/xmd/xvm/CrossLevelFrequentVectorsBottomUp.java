@@ -43,22 +43,19 @@ public class CrossLevelFrequentVectorsBottomUp implements CrossLevelFrequentVect
       currentLevel.clear();
       shiftToUpperLevel(currentLevelStartIndex, currentLevelSize);
 
-
       iteration--;
     }
 
-//    System.out.println(IntArrayUtils.toString(patterns));
-//    System.out.println(IntArrayUtils.toString(frequencies));
+    Collection<WithCount<int[][]>> frequentPatterns = Lists.newArrayList();
 
-
-    Iterator<WithCount<int[][]>> iterator = allLevels.iterator();
-
-    while (iterator.hasNext()) {
-      WithCount<int[][]> pattern = iterator.next();
-      System.out.println(IntArrayUtils.toString(pattern.getObject()) + "\t" + pattern.getCount());
+    for (WithCount<int[][]> pattern : allLevels) {
+      if (pattern.getCount() >= minFrequency) {
+       frequentPatterns.add(pattern);
+//       System.out.println(IntArrayUtils.toString(pattern.getObject()) + "\t" + pattern.getCount());
+      }
     }
 
-    return allLevels;
+    return frequentPatterns;
   }
 
   private void shiftToUpperLevel(int currentLevelStartIndex, int currentLevelSize) {
