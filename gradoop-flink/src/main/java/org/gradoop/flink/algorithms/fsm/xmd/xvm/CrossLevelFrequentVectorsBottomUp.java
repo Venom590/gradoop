@@ -10,22 +10,17 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
-public class CrossLevelFrequentVectorsBottomUp implements CrossLevelFrequentVectors {
+public class CrossLevelFrequentVectorsBottomUp extends CrossLevelFrequentVectorsBase {
 
-  private int dimCount;
-  private int[] schema;
-
-  private final CrossLevelVectorWithCountComparator comparator =
+  protected final CrossLevelVectorWithCountComparator comparator =
     new CrossLevelVectorWithCountComparator();
-
   private List<WithCount<int[][]>> allLevels = Lists.newArrayList();
   private List<WithCount<int[][]>> currentLevel = Lists.newLinkedList();
-
-  private int iteration;
 
   @Override
   public Collection<WithCount<int[][]>> mine(int[][][] data, int minFrequency) {
     extractSchema(data);
+
 
     allLevels.clear();
     currentLevel.clear();
@@ -35,6 +30,8 @@ public class CrossLevelFrequentVectorsBottomUp implements CrossLevelFrequentVect
     }
 
     // while not reached root
+    int iteration = calculateIterations();
+
     while (iteration > 0) {
       countCurrentLevelFrequencies();
       int currentLevelStartIndex = allLevels.size();
@@ -56,6 +53,16 @@ public class CrossLevelFrequentVectorsBottomUp implements CrossLevelFrequentVect
     }
 
     return frequentPatterns;
+  }
+
+  private int calculateIterations() {
+    int iteration = 1;
+
+    for (int levels : schema) {
+      iteration += levels;
+    }
+
+    return iteration;
   }
 
   private void shiftToUpperLevel(int currentLevelStartIndex, int currentLevelSize) {
@@ -83,19 +90,6 @@ public class CrossLevelFrequentVectorsBottomUp implements CrossLevelFrequentVect
       } else {
         last = current;
       }
-    }
-  }
-
-  private void extractSchema(int[][][] data) {
-    int[][] sample = data[0];
-    dimCount = sample.length;
-    schema = new int[dimCount];
-    iteration = 1;
-
-    for (int dim = 0; dim < dimCount; dim++) {
-      int levelCount = sample[dim].length;
-      schema[dim] = levelCount;
-      iteration += levelCount;
     }
   }
 

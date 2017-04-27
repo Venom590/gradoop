@@ -1,6 +1,5 @@
 package org.gradoop.flink.algorithms.fsm.xmd.xvm;
 
-import org.gradoop.common.util.IntArrayUtils;
 import org.gradoop.flink.model.impl.tuples.WithCount;
 import org.junit.Test;
 
@@ -18,13 +17,16 @@ public class CrossLevelFrequentVectorsTest {
 
   @Test
   public void mine() throws Exception {
+    mine(new CrossLevelFrequentVectorsBottomUp());
+    mine(new CrossLevelFrequentVectorsTopDown());
+  }
 
+  private void mine(CrossLevelFrequentVectors miner) {
     int[][][] database = getDatabase();
 
     int[][][] expectedResult = getExpectedResult();
     Arrays.sort(expectedResult, patternComparator);
 
-    CrossLevelFrequentVectors miner = new CrossLevelFrequentVectorsBottomUp();
 
     Collection<WithCount<int[][]>> result = miner.mine(database, 3);
 
@@ -43,19 +45,6 @@ public class CrossLevelFrequentVectorsTest {
 
       assertTrue(found);
     }
-  }
-
-  private boolean equal(int[][] a, int[][] b) {
-    boolean equal = true;
-
-    for (int i = 0; i < a.length; i++) {
-      if (!Objects.deepEquals(a[i], b[i])) {
-        equal = false;
-        break;
-      }
-    }
-
-    return equal;
   }
 
   public int[][][] getDatabase() {

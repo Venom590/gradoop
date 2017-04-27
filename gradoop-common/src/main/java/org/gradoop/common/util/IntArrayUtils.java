@@ -1,6 +1,5 @@
 package org.gradoop.common.util;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 public class IntArrayUtils {
@@ -24,18 +23,28 @@ public class IntArrayUtils {
 
   public static String toString(int[][] nesting, int level) {
 
-    String[] arrayStrings = new String[nesting.length + 2];
-    arrayStrings[0] = prefix(level) + "[";
-    arrayStrings[nesting.length + 1] = prefix(level) + "]";
+//    String[] arrayStrings = new String[nesting.length + 2];
+//    arrayStrings[0] = prefix(level) + "[";
+//    arrayStrings[nesting.length + 1] = prefix(level) + "]";
+//
+//    for (int j = 0; j < nesting.length; j++) {
+//      int[] array = nesting[j];
+//
+//      arrayStrings[j+1] = prefix(level + 1) + toString(array);
+//
+//    }
+//
+//    return StringUtils.join(arrayStrings, "\n");
+
+    String[] arrayStrings = new String[nesting.length];
 
     for (int j = 0; j < nesting.length; j++) {
       int[] array = nesting[j];
 
-      arrayStrings[j+1] = prefix(level + 1) + toString(array);
-
+      arrayStrings[j] = toString(array);
     }
 
-    return StringUtils.join(arrayStrings, "\n");
+    return "[" + StringUtils.join(arrayStrings, ",") + "]";
   }
 
   private static String prefix(int level) {
