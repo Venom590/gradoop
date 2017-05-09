@@ -27,7 +27,7 @@ import org.gradoop.flink.algorithms.fsm.xmd.config.DIMSpanConstants;
 import org.gradoop.flink.algorithms.fsm.xmd.config.DictionaryType;
 import org.gradoop.flink.algorithms.fsm.xmd.config.XMDConfig;
 import org.gradoop.flink.algorithms.fsm.xmd.functions.conversion.DFSCodeToEPGMGraphTransaction;
-import org.gradoop.flink.algorithms.fsm.xmd.functions.conversion.EPGMGraphTransactionToLabeledGraph;
+import org.gradoop.flink.algorithms.fsm.xmd.functions.conversion.EPGMGraphTransactionToMultidimensionalGraph;
 import org.gradoop.flink.algorithms.fsm.xmd.functions.mining.CreateCollector;
 import org.gradoop.flink.algorithms.fsm.xmd.functions.mining.ExpandFrequentPatterns;
 import org.gradoop.flink.algorithms.fsm.xmd.functions.mining.Frequent;
@@ -38,18 +38,16 @@ import org.gradoop.flink.algorithms.fsm.xmd.functions.mining.NotObsolete;
 import org.gradoop.flink.algorithms.fsm.xmd.functions.mining.ReportSupportedPatterns;
 import org.gradoop.flink.algorithms.fsm.xmd.functions.mining.VerifyPattern;
 import org.gradoop.flink.algorithms.fsm.xmd.functions.preprocessing.CreateDictionary;
-import org.gradoop.flink.algorithms.fsm.xmd.functions.preprocessing.EncodeAndPruneEdges;
-import org.gradoop.flink.algorithms.fsm.xmd.functions.preprocessing.EncodeAndPruneVertices;
+import org.gradoop.flink.algorithms.fsm.xmd.functions.preprocessing.Encode;
 import org.gradoop.flink.algorithms.fsm.xmd.functions.preprocessing.MinFrequency;
 import org.gradoop.flink.algorithms.fsm.xmd.functions.preprocessing.NotEmpty;
-import org.gradoop.flink.algorithms.fsm.xmd.functions.preprocessing.ReportEdgeLabels;
-import org.gradoop.flink.algorithms.fsm.xmd.functions.preprocessing.ReportVertexLabels;
+import org.gradoop.flink.algorithms.fsm.xmd.functions.preprocessing.ReportLabels;
 import org.gradoop.flink.algorithms.fsm.xmd.gspan.DirectedGSpanLogic;
 import org.gradoop.flink.algorithms.fsm.xmd.gspan.GSpanLogic;
 import org.gradoop.flink.algorithms.fsm.xmd.gspan.UndirectedGSpanLogic;
-import org.gradoop.flink.algorithms.fsm.xmd.tuples.GraphWithPatternEmbeddingsMap;
-import org.gradoop.flink.algorithms.fsm.xmd.tuples.LabeledGraphIntString;
-import org.gradoop.flink.algorithms.fsm.xmd.tuples.LabeledGraphStringString;
+import org.gradoop.flink.algorithms.fsm.xmd.tuples.EncodedMDGraph;
+import org.gradoop.flink.algorithms.fsm.xmd.tuples.MDGraphWithPatternEmbeddingsMap;
+import org.gradoop.flink.algorithms.fsm.xmd.tuples.MultidimensionalGraph;
 import org.gradoop.flink.model.api.operators.UnaryCollectionToCollectionOperator;
 import org.gradoop.flink.model.impl.GraphCollection;
 import org.gradoop.flink.model.impl.GraphTransactions;
@@ -91,12 +89,7 @@ public class CrossLevelMultiDimensionalFSM implements UnaryCollectionToCollectio
   /**
    * Vertex label dictionary for dictionary coding.
    */
-  private DataSet<String[]> vertexDictionary;
-
-  /**
-   * Edge label dictionary for dictionary coding.
-   */
-  private DataSet<String[]> edgeDictionary;
+  private DataSet<String[]> labelDictionary;
 
   /**
    * Label comparator used for dictionary coding.
@@ -139,10 +132,10 @@ public class CrossLevelMultiDimensionalFSM implements UnaryCollectionToCollectio
   public GraphCollection execute(GraphCollection collection) {
 
     // convert Gradoop graph collection to DIMSpan input format
-    DataSet<LabeledGraphStringString> input = collection
+    DataSet<MultidimensionalGraph> input = collection
       .toTransactions()
       .getTransactions()
-      .map(new EPGMGraphTransactionToLabeledGraph());
+      .map(new EPGMGraphTransactionToMultidimensionalGraph(fsmConfig));
 
     // run DIMSpan
     DataSet<GraphTransaction> output = execute(input);
@@ -160,9 +153,9 @@ public class CrossLevelMultiDimensionalFSM implements UnaryCollectionToCollectio
    * @param input input graph collection
    * @return frequent patterns
    */
-  public DataSet<GraphTransaction> execute(DataSet<LabeledGraphStringString> input) {
+  public DataSet<GraphTransaction> execute(DataSet<MultidimensionalGraph> input) {
 
-    DataSet<int[]> encodedInput = preProcess(input);
+    DataSet<EncodedMDGraph> encodedInput = preProcess(input);
     DataSet<WithCount<int[]>> encodedOutput = mine(encodedInput);
 
     return postProcess(encodedOutput);
@@ -174,7 +167,7 @@ public class CrossLevelMultiDimensionalFSM implements UnaryCollectionToCollectio
    * @param graphs input
    * @return preprocessed input
    */
-  private DataSet<int[]> preProcess(DataSet<LabeledGraphStringString> graphs) {
+  private DataSet<EncodedMDGraph> preProcess(DataSet<MultidimensionalGraph> graphs) {
 
     // Determine cardinality of input graph collection
     this.graphCount = Count
@@ -185,10 +178,12 @@ public class CrossLevelMultiDimensionalFSM implements UnaryCollectionToCollectio
       .map(new MinFrequency(fsmConfig));
 
     // Execute vertex label pruning and dictionary coding
-    DataSet<LabeledGraphIntString> graphsWithEncodedVertices = encodeVertices(graphs);
+    createDictionary(graphs);
 
     // Execute edge label pruning and dictionary coding
-    DataSet<int[]> encodedGraphs = encodeEdges(graphsWithEncodedVertices);
+    DataSet<EncodedMDGraph> encodedGraphs = graphs
+      .map(new Encode(fsmConfig))
+      .withBroadcastSet(labelDictionary, DIMSpanConstants.LABEL_DICTIONARY);
 
     // return all non-obsolete encoded graphs
     return encodedGraphs
@@ -201,14 +196,14 @@ public class CrossLevelMultiDimensionalFSM implements UnaryCollectionToCollectio
    * @param graphs preprocessed input graph collection
    * @return frequent patterns
    */
-  protected DataSet<WithCount<int[]>> mine(DataSet<int[]> graphs) {
+  protected DataSet<WithCount<int[]>> mine(DataSet<EncodedMDGraph> graphs) {
 
-    DataSet<GraphWithPatternEmbeddingsMap> searchSpace = graphs
+    DataSet<MDGraphWithPatternEmbeddingsMap> searchSpace = graphs
       .map(new InitSingleEdgePatternEmbeddingsMap(gSpan));
 
     // Workaround to support multiple data sinks: create pseudo-graph (collector),
     // which embedding map will be used to union all k-edge frequent patterns
-    DataSet<GraphWithPatternEmbeddingsMap> collector = graphs
+    DataSet<MDGraphWithPatternEmbeddingsMap> collector = graphs
       .getExecutionEnvironment()
       .fromElements(true)
       .map(new CreateCollector());
@@ -217,7 +212,7 @@ public class CrossLevelMultiDimensionalFSM implements UnaryCollectionToCollectio
 
     // ITERATION HEAD
 
-    IterativeDataSet<GraphWithPatternEmbeddingsMap> iterative = searchSpace
+    IterativeDataSet<MDGraphWithPatternEmbeddingsMap> iterative = searchSpace
       .iterate(MAX_ITERATIONS);
 
     // ITERATION BODY
@@ -227,7 +222,7 @@ public class CrossLevelMultiDimensionalFSM implements UnaryCollectionToCollectio
 
     DataSet<WithCount<int[]>> frequentPatterns = getFrequentPatterns(reports);
 
-    DataSet<GraphWithPatternEmbeddingsMap> grownEmbeddings = iterative
+    DataSet<MDGraphWithPatternEmbeddingsMap> grownEmbeddings = iterative
       .map(new GrowFrequentPatterns(gSpan))
       .withBroadcastSet(frequentPatterns, DIMSpanConstants.FREQUENT_PATTERNS)
       .filter(new NotObsolete());
@@ -250,8 +245,7 @@ public class CrossLevelMultiDimensionalFSM implements UnaryCollectionToCollectio
   private DataSet<GraphTransaction> postProcess(DataSet<WithCount<int[]>> encodedOutput) {
     return encodedOutput
       .map(new DFSCodeToEPGMGraphTransaction())
-      .withBroadcastSet(vertexDictionary, DIMSpanConstants.VERTEX_DICTIONARY)
-      .withBroadcastSet(edgeDictionary, DIMSpanConstants.EDGE_DICTIONARY)
+      .withBroadcastSet(labelDictionary, DIMSpanConstants.LABEL_DICTIONARY)
       .withBroadcastSet(graphCount, DIMSpanConstants.GRAPH_COUNT);
   }
 
@@ -261,44 +255,16 @@ public class CrossLevelMultiDimensionalFSM implements UnaryCollectionToCollectio
    * @param graphs graphs with string-labels
    * @return graphs with dictionary-encoded vertex labels
    */
-  private DataSet<LabeledGraphIntString> encodeVertices(DataSet<LabeledGraphStringString> graphs) {
+  private void createDictionary(DataSet<MultidimensionalGraph> graphs) {
 
     // LABEL PRUNING
 
-    DataSet<WithCount<String>> vertexLabels = graphs
-      .flatMap(new ReportVertexLabels());
+    DataSet<WithCount<String>> labels = graphs
+      .flatMap(new ReportLabels());
 
-    vertexLabels = getFrequentLabels(vertexLabels);
-
-    // DICTIONARY ENCODING
-
-    vertexDictionary = vertexLabels
+    labelDictionary = getFrequentLabels(labels)
       .reduceGroup(new CreateDictionary(comparator));
 
-    return graphs
-      .map(new EncodeAndPruneVertices())
-      .withBroadcastSet(vertexDictionary, DIMSpanConstants.VERTEX_DICTIONARY);
-  }
-
-  /**
-   * Executes pruning and dictionary coding of edge labels.
-   *
-   * @param graphs graphs with dictionary-encoded vertex labels
-   * @return graphs with dictionary-encoded vertex and edge labels
-   */
-  private DataSet<int[]> encodeEdges(DataSet<LabeledGraphIntString> graphs) {
-
-    DataSet<WithCount<String>> edgeLabels = graphs
-      .flatMap(new ReportEdgeLabels());
-
-    edgeLabels = getFrequentLabels(edgeLabels);
-
-    edgeDictionary = edgeLabels
-      .reduceGroup(new CreateDictionary(comparator));
-
-    return graphs
-      .map(new EncodeAndPruneEdges(fsmConfig))
-      .withBroadcastSet(edgeDictionary, DIMSpanConstants.EDGE_DICTIONARY);
   }
 
   /**

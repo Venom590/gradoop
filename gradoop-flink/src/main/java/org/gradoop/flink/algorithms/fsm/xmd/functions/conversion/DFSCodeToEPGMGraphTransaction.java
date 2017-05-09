@@ -66,7 +66,7 @@ public class DFSCodeToEPGMGraphTransaction
     super.open(parameters);
 
     vertexDictionary = getRuntimeContext()
-      .<String[]>getBroadcastVariable(DIMSpanConstants.VERTEX_DICTIONARY).get(0);
+      .<String[]>getBroadcastVariable(DIMSpanConstants.LABEL_DICTIONARY).get(0);
 
     edgeDictionary = getRuntimeContext()
       .<String[]>getBroadcastVariable(DIMSpanConstants.EDGE_DICTIONARY).get(0);

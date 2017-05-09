@@ -20,14 +20,16 @@ package org.gradoop.flink.algorithms.fsm.xmd.functions.mining;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.gradoop.flink.algorithms.fsm.xmd.gspan.GSpanLogic;
 import org.gradoop.flink.algorithms.fsm.xmd.model.Simple16Compressor;
-import org.gradoop.flink.algorithms.fsm.xmd.tuples.GraphWithPatternEmbeddingsMap;
+import org.gradoop.flink.algorithms.fsm.xmd.tuples.EncodedMDGraph;
+import org.gradoop.flink.algorithms.fsm.xmd.tuples.MDGraphWithPatternEmbeddingsMap;
 import org.gradoop.flink.algorithms.fsm.xmd.tuples.PatternEmbeddingsMap;
 
 
 /**
  * graph => (graph, 1-edge pattern -> embeddings)
  */
-public class InitSingleEdgePatternEmbeddingsMap implements MapFunction<int[], GraphWithPatternEmbeddingsMap> {
+public class InitSingleEdgePatternEmbeddingsMap
+  implements MapFunction<EncodedMDGraph, MDGraphWithPatternEmbeddingsMap> {
 
   /**
    * pattern generation logic
@@ -44,17 +46,13 @@ public class InitSingleEdgePatternEmbeddingsMap implements MapFunction<int[], Gr
   }
 
   @Override
-  public GraphWithPatternEmbeddingsMap map(int[] graph) throws Exception {
-
-    PatternEmbeddingsMap map = gSpan.getSingleEdgePatternEmbeddings(graph);
+  public MDGraphWithPatternEmbeddingsMap map(EncodedMDGraph graph) throws Exception {
+    PatternEmbeddingsMap map = gSpan.getSingleEdgePatternEmbeddings(graph.getGraph());
 
     Simple16Compressor.compressPatterns(map);
-
-
     Simple16Compressor.compressEmbeddings(map);
 
-
-    return new GraphWithPatternEmbeddingsMap(graph, map);
+    return new MDGraphWithPatternEmbeddingsMap(graph, map);
   }
 
 }

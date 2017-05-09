@@ -22,12 +22,13 @@ import org.apache.flink.api.java.tuple.Tuple2;
 /**
  * (graph, pattern->embeddings)
  */
-public class GraphWithPatternEmbeddingsMap extends Tuple2<int[], PatternEmbeddingsMap> {
+public class MDGraphWithPatternEmbeddingsMap
+  extends Tuple2<EncodedMDGraph, PatternEmbeddingsMap> {
 
   /**
    * Default constructor.
    */
-  public GraphWithPatternEmbeddingsMap() {
+  public MDGraphWithPatternEmbeddingsMap() {
   }
 
   /**
@@ -35,7 +36,8 @@ public class GraphWithPatternEmbeddingsMap extends Tuple2<int[], PatternEmbeddin
    *  @param graph graph
    * @param patternEmbeddings pattern->embeddings
    */
-  public GraphWithPatternEmbeddingsMap(int[] graph, PatternEmbeddingsMap patternEmbeddings) {
+  public MDGraphWithPatternEmbeddingsMap(
+    EncodedMDGraph graph, PatternEmbeddingsMap patternEmbeddings) {
     super(graph, patternEmbeddings);
   }
 
@@ -45,16 +47,16 @@ public class GraphWithPatternEmbeddingsMap extends Tuple2<int[], PatternEmbeddin
    * @return true, if collector
    */
   public boolean isFrequentPatternCollector() {
-    return f0.length <= 1;
+    return f0.getGraph().length <= 1;
   }
 
   // GETTERS AND SETTERS
 
-  public int[] getGraph() {
+  public EncodedMDGraph getGraph() {
     return f0;
   }
 
-  public void setGraph(int[] graph) {
+  public void setGraph(EncodedMDGraph graph) {
     this.f0 = graph;
   }
 

@@ -24,7 +24,7 @@ import org.gradoop.flink.algorithms.fsm.xmd.comparison.DFSCodeComparator;
 import org.gradoop.flink.algorithms.fsm.xmd.config.DIMSpanConstants;
 import org.gradoop.flink.algorithms.fsm.xmd.gspan.GSpanLogic;
 import org.gradoop.flink.algorithms.fsm.xmd.model.Simple16Compressor;
-import org.gradoop.flink.algorithms.fsm.xmd.tuples.GraphWithPatternEmbeddingsMap;
+import org.gradoop.flink.algorithms.fsm.xmd.tuples.MDGraphWithPatternEmbeddingsMap;
 import org.gradoop.flink.algorithms.fsm.xmd.tuples.PatternEmbeddingsMap;
 import org.gradoop.flink.model.impl.tuples.WithCount;
 
@@ -34,7 +34,7 @@ import java.util.List;
  * (graph, k-edge pattern -> embeddings) => (graph, k+1-edge pattern -> embeddings)
  */
 public class GrowFrequentPatterns
-  extends RichMapFunction<GraphWithPatternEmbeddingsMap, GraphWithPatternEmbeddingsMap> {
+  extends RichMapFunction<MDGraphWithPatternEmbeddingsMap, MDGraphWithPatternEmbeddingsMap> {
 
   /**
    * compressed k-edge frequent patterns for fast embedding map lookup
@@ -111,7 +111,7 @@ public class GrowFrequentPatterns
   }
 
   @Override
-  public GraphWithPatternEmbeddingsMap map(GraphWithPatternEmbeddingsMap pair) throws Exception {
+  public MDGraphWithPatternEmbeddingsMap map(MDGraphWithPatternEmbeddingsMap pair) throws Exception {
 
     // union k-1 edge frequent patterns with k-edge ones
     if (pair.isFrequentPatternCollector()) {
@@ -119,7 +119,7 @@ public class GrowFrequentPatterns
         pair.getMap().collect(patternWithFrequency);
       }
     } else {
-      int[] graph = pair.getGraph();
+      int[] graph = pair.getGraph().getGraph();
 
       // execute pattern growth for all supported frequent patterns
       PatternEmbeddingsMap childMap = gSpan.growPatterns(graph, pair.getMap(),

@@ -18,15 +18,15 @@
 package org.gradoop.flink.algorithms.fsm.xmd.functions.mining;
 
 import org.apache.flink.api.common.functions.FilterFunction;
-import org.gradoop.flink.algorithms.fsm.xmd.tuples.GraphWithPatternEmbeddingsMap;
+import org.gradoop.flink.algorithms.fsm.xmd.tuples.MDGraphWithPatternEmbeddingsMap;
 
 /**
  * (graph, pattern->embeddings) => true, if graph is empty
  */
-public class IsFrequentPatternCollector implements FilterFunction<GraphWithPatternEmbeddingsMap> {
+public class IsFrequentPatternCollector implements FilterFunction<MDGraphWithPatternEmbeddingsMap> {
 
   @Override
-  public boolean filter(GraphWithPatternEmbeddingsMap graphWithMap) throws Exception {
+  public boolean filter(MDGraphWithPatternEmbeddingsMap graphWithMap) throws Exception {
     return graphWithMap.isFrequentPatternCollector();
   }
 }

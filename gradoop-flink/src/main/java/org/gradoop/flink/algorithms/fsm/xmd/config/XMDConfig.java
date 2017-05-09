@@ -47,6 +47,8 @@ public class XMDConfig implements Serializable {
    * Flag to enable branch constraint in pattern growth (true=enabled).
    */
   private boolean branchConstraintEnabled = true;
+  private String dimensionKeyPrefix;
+  private String dimensionValueSeparator;
 
   /**
    * valued constructor
@@ -113,5 +115,13 @@ public class XMDConfig implements Serializable {
 
   public boolean isBranchConstraintEnabled() {
     return branchConstraintEnabled;
+  }
+
+  public String getDimensionKeyPrefix() {
+    return dimensionKeyPrefix;
+  }
+
+  public String getDimensionValueSeparator() {
+    return dimensionValueSeparator;
   }
 }

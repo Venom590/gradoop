@@ -20,7 +20,7 @@ package org.gradoop.flink.algorithms.fsm.xmd.functions.preprocessing;
 import com.google.common.collect.Sets;
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.util.Collector;
-import org.gradoop.flink.algorithms.fsm.xmd.tuples.LabeledGraphStringString;
+import org.gradoop.flink.algorithms.fsm.xmd.tuples.MultidimensionalGraph;
 import org.gradoop.flink.model.impl.tuples.WithCount;
 
 import java.util.Set;
@@ -28,7 +28,8 @@ import java.util.Set;
 /**
  * graph -> (vertexLabel,1L),..
  */
-public class ReportVertexLabels implements FlatMapFunction<LabeledGraphStringString, WithCount<String>> {
+public class ReportLabels
+  implements FlatMapFunction<MultidimensionalGraph, WithCount<String>> {
 
   /**
    * reuse tuple to avoid instantiations
@@ -36,12 +37,26 @@ public class ReportVertexLabels implements FlatMapFunction<LabeledGraphStringStr
   private WithCount<String> reuseTuple = new WithCount<>(null, 1);
 
   @Override
-  public void flatMap(LabeledGraphStringString graph,
-    Collector<WithCount<String>> out) throws Exception {
+  public void flatMap(
+    MultidimensionalGraph graph, Collector<WithCount<String>> out) throws Exception {
 
-    Set<String> vertexLabels = Sets.newHashSet(graph.getVertexLabels());
+    String[][][] vertexData = graph.getVertexData();
 
-    for (String label : vertexLabels) {
+    Set<String> values = Sets.newHashSet();
+
+    for (String[][] labelAndDimensions : vertexData) {
+      for (String[] labelOrDimension : labelAndDimensions) {
+        for (String value : labelOrDimension) {
+          values.add(value);
+        }
+      }
+    }
+
+    for (String label : graph.getEdgeLabels()) {
+      values.add(label);
+    }
+
+    for (String label : values) {
       reuseTuple.setObject(label);
       out.collect(reuseTuple);
     }

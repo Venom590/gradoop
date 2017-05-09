@@ -35,7 +35,7 @@ public class DIMSpanConstants {
   /**
    * Vertex label dictionary.
    */
-  public static final String VERTEX_DICTIONARY = "vld";
+  public static final String LABEL_DICTIONARY = "vld";
 
   /**
    * Edge label Dictionary

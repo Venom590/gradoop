@@ -18,14 +18,14 @@
 package org.gradoop.flink.algorithms.fsm.xmd.functions.mining;
 
 import org.apache.flink.api.common.functions.FilterFunction;
-import org.gradoop.flink.algorithms.fsm.xmd.tuples.GraphWithPatternEmbeddingsMap;
+import org.gradoop.flink.algorithms.fsm.xmd.tuples.MDGraphWithPatternEmbeddingsMap;
 
 /**
  * (graph, pattern->embeddings) => true, if pattern->embeddings is empty
  */
-public class NotObsolete implements FilterFunction<GraphWithPatternEmbeddingsMap> {
+public class NotObsolete implements FilterFunction<MDGraphWithPatternEmbeddingsMap> {
   @Override
-  public boolean filter(GraphWithPatternEmbeddingsMap graphWithMap) throws Exception {
+  public boolean filter(MDGraphWithPatternEmbeddingsMap graphWithMap) throws Exception {
     return !graphWithMap.getMap().isEmpty();
   }
 }
