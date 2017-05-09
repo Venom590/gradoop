@@ -41,13 +41,7 @@ public class XMDConfig implements Serializable {
   /**
    * Dictionary type used for dictionary coding.
    */
-  private DictionaryType
-    dictionaryType = DictionaryType.INVERSE_PROPORTIONAL;
-
-  /**
-   * Flag to set dataflow position of pattern validation.
-   */
-  private DataflowStep patternVerificationInStep = DataflowStep.COMBINE;
+  private DictionaryType dictionaryType = DictionaryType.INVERSE_PROPORTIONAL;
 
   /**
    * Flag to enable branch constraint in pattern growth (true=enabled).
@@ -73,8 +67,6 @@ public class XMDConfig implements Serializable {
     parameters.add("dictionary type : " + dictionaryType.toString());
 
     parameters.add(getParameterEnabled("branch constraint", branchConstraintEnabled));
-
-    parameters.add("pattern validation @ " + patternVerificationInStep.toString());
 
     return StringUtils.join(parameters, "|");
   }
@@ -113,14 +105,6 @@ public class XMDConfig implements Serializable {
 
   public void setDictionaryType(DictionaryType dictionaryType) {
     this.dictionaryType = dictionaryType;
-  }
-
-  public DataflowStep getPatternVerificationInStep() {
-    return patternVerificationInStep;
-  }
-
-  public void setPatternVerificationInStep(DataflowStep patternVerificationInStep) {
-    this.patternVerificationInStep = patternVerificationInStep;
   }
 
   public void setBranchConstraintEnabled(boolean branchConstraintEnabled) {

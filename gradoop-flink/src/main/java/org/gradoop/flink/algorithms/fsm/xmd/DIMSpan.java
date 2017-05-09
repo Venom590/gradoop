@@ -194,7 +194,7 @@ public class DIMSpan {
     DataSet<WithCount<int[]>> frequentPatterns = getFrequentPatterns(reports);
 
     DataSet<GraphWithPatternEmbeddingsMap> grownEmbeddings = iterative
-      .map(new GrowFrequentPatterns(gSpan, fsmConfig))
+      .map(new GrowFrequentPatterns(gSpan))
       .withBroadcastSet(frequentPatterns, DIMSpanConstants.FREQUENT_PATTERNS)
       .filter(new NotObsolete());
 
@@ -300,36 +300,12 @@ public class DIMSpan {
    * @return valid frequent patterns
    */
   private DataSet<WithCount<int[]>> getFrequentPatterns(DataSet<WithCount<int[]>> patterns) {
-    // COMBINE
-
-    patterns = patterns
+    return patterns
       .groupBy(0)
-      .combineGroup(sumPartition());
-
-    if (fsmConfig.getPatternVerificationInStep() == DataflowStep.COMBINE) {
-      patterns = patterns
-        .filter(new VerifyPattern(gSpan));
-    }
-
-
-    // REDUCE
-
-    patterns = patterns
-      .groupBy(0)
-      .sum(1);
-
-    // FILTER
-
-    patterns = patterns
+      .sum(1)
       .filter(new Frequent<>())
-      .withBroadcastSet(minFrequency, DIMSpanConstants.MIN_FREQUENCY);
-
-    if (fsmConfig.getPatternVerificationInStep() == DataflowStep.FILTER) {
-      patterns = patterns
-        .filter(new VerifyPattern(gSpan));
-    }
-
-    return patterns;
+      .withBroadcastSet(minFrequency, DIMSpanConstants.MIN_FREQUENCY)
+      .filter(new VerifyPattern(gSpan));
   }
 
   /**

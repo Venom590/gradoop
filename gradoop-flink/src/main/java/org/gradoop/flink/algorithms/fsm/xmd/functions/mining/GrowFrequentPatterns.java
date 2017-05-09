@@ -21,9 +21,7 @@ import com.google.common.collect.Lists;
 import org.apache.flink.api.common.functions.RichMapFunction;
 import org.apache.flink.configuration.Configuration;
 import org.gradoop.flink.algorithms.fsm.xmd.comparison.DFSCodeComparator;
-import org.gradoop.flink.algorithms.fsm.xmd.config.XMDConfig;
 import org.gradoop.flink.algorithms.fsm.xmd.config.DIMSpanConstants;
-import org.gradoop.flink.algorithms.fsm.xmd.config.DataflowStep;
 import org.gradoop.flink.algorithms.fsm.xmd.gspan.GSpanLogic;
 import org.gradoop.flink.algorithms.fsm.xmd.model.Simple16Compressor;
 import org.gradoop.flink.algorithms.fsm.xmd.tuples.GraphWithPatternEmbeddingsMap;
@@ -64,23 +62,15 @@ public class GrowFrequentPatterns
   private final GSpanLogic gSpan;
 
   /**
-   * flag to enable pattern verification before counting (true=enabled)
-   */
-  private final boolean validatePatterns;
-
-  /**
    * Constructor.
    *
    * @param gSpan pattern growth logic
-   * @param fsmConfig FSM Configuration
    */
-  public GrowFrequentPatterns(GSpanLogic gSpan, XMDConfig fsmConfig) {
+  public GrowFrequentPatterns(GSpanLogic gSpan) {
 
     // set pattern growth logic for directed or undirected mode
     this.gSpan = gSpan;
 
-    // cache validation flag
-    validatePatterns = fsmConfig.getPatternVerificationInStep() == DataflowStep.MAP;
   }
 
   @Override
@@ -134,22 +124,6 @@ public class GrowFrequentPatterns
       // execute pattern growth for all supported frequent patterns
       PatternEmbeddingsMap childMap = gSpan.growPatterns(graph, pair.getMap(),
         frequentPatterns, rightmostPaths, true, compressedFrequentPatterns);
-
-      // drop non-minimal patterns if configured to be executed here
-      if (validatePatterns) {
-        PatternEmbeddingsMap validatedMap = PatternEmbeddingsMap.getEmptyOne();
-
-        for (int i = 0; i < childMap.getPatternCount(); i++) {
-          int[] pattern = childMap.getPattern(i);
-
-          if (gSpan.isMinimal(pattern)) {
-            int[] embeddingData = childMap.getValues()[i];
-            validatedMap.put(pattern, embeddingData);
-          }
-        }
-
-        childMap = validatedMap;
-      }
 
       // update pattern-embedding map
       pair.setPatternEmbeddings(childMap);
