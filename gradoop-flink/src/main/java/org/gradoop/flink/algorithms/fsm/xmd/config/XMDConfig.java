@@ -45,11 +45,6 @@ public class XMDConfig implements Serializable {
     dictionaryType = DictionaryType.INVERSE_PROPORTIONAL;
 
   /**
-   * Flag to enable graph compression (true=enabled).
-   */
-  private boolean graphCompressionEnabled = true;
-
-  /**
    * Flag to set dataflow position of pattern compression.
    */
   private DataflowStep patternCompressionInStep = DataflowStep.MAP;
@@ -83,7 +78,6 @@ public class XMDConfig implements Serializable {
     parameters.add("dictionary type : " + dictionaryType.toString());
 
     parameters.add(getParameterEnabled("branch constraint", branchConstraintEnabled));
-    parameters.add(getParameterEnabled("graph compression", graphCompressionEnabled));
 
     parameters.add("pattern compression @ " + patternCompressionInStep.toString());
     parameters.add("pattern validation @ " + patternVerificationInStep.toString());
@@ -125,14 +119,6 @@ public class XMDConfig implements Serializable {
 
   public void setDictionaryType(DictionaryType dictionaryType) {
     this.dictionaryType = dictionaryType;
-  }
-
-  public boolean isGraphCompressionEnabled() {
-    return graphCompressionEnabled;
-  }
-
-  public void setGraphCompressionEnabled(boolean graphCompressionEnabled) {
-    this.graphCompressionEnabled = graphCompressionEnabled;
   }
 
   public void setPatternCompressionInStep(DataflowStep patternCompressionInStep) {

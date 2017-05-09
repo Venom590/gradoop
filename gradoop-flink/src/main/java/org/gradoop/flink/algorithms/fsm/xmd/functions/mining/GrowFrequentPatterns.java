@@ -64,11 +64,6 @@ public class GrowFrequentPatterns
   private final GSpanLogic gSpan;
 
   /**
-   * flag to enable graph compression (true=enabled)
-   */
-  private final boolean compressGraphs;
-
-  /**
    * flag to enable pattern compression (true=enabled)
    */
   private final boolean compressPatterns;
@@ -95,7 +90,6 @@ public class GrowFrequentPatterns
     this.gSpan = gSpan;
 
     // cache compression flags
-    compressGraphs = fsmConfig.isGraphCompressionEnabled();
     compressPatterns = fsmConfig.getPatternCompressionInStep() == DataflowStep.MAP;
     uncompressFrequentPatterns = fsmConfig.getPatternCompressionInStep() != DataflowStep.WITHOUT;
 
@@ -152,11 +146,6 @@ public class GrowFrequentPatterns
       }
     } else {
       int[] graph = pair.getGraph();
-
-      // uncompress graph
-      if (compressGraphs) {
-        graph = Simple16Compressor.uncompress(graph);
-      }
 
       // execute pattern growth for all supported frequent patterns
       PatternEmbeddingsMap childMap = gSpan.growPatterns(graph, pair.getMap(),
