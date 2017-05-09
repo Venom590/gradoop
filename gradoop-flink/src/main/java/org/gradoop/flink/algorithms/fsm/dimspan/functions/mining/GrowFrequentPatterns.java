@@ -22,7 +22,7 @@ import org.apache.flink.api.common.functions.RichMapFunction;
 import org.apache.flink.configuration.Configuration;
 import org.gradoop.flink.algorithms.fsm.dimspan.comparison.DFSCodeComparator;
 import org.gradoop.flink.algorithms.fsm.dimspan.config.DIMSpanConfig;
-import org.gradoop.flink.algorithms.fsm.dimspan.config.DIMSpanConstants;
+import org.gradoop.flink.algorithms.fsm.common.config.FSMConstants;
 import org.gradoop.flink.algorithms.fsm.dimspan.config.DataflowStep;
 import org.gradoop.flink.algorithms.fsm.dimspan.gspan.GSpanLogic;
 import org.gradoop.flink.algorithms.fsm.dimspan.tuples.PatternEmbeddingsMap;
@@ -116,7 +116,7 @@ public class GrowFrequentPatterns
     // broadcast reception
 
     patternFrequencies =
-      getRuntimeContext().getBroadcastVariable(DIMSpanConstants.FREQUENT_PATTERNS);
+      getRuntimeContext().getBroadcastVariable(FSMConstants.FREQUENT_PATTERNS);
 
     int patternCount = patternFrequencies.size();
 

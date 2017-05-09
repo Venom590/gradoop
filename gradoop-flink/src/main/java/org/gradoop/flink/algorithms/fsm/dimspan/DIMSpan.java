@@ -27,7 +27,7 @@ import org.gradoop.flink.algorithms.fsm.dimspan.comparison.InverseProportionalLa
 import org.gradoop.flink.algorithms.fsm.dimspan.comparison.LabelComparator;
 import org.gradoop.flink.algorithms.fsm.dimspan.comparison.ProportionalLabelComparator;
 import org.gradoop.flink.algorithms.fsm.dimspan.config.DIMSpanConfig;
-import org.gradoop.flink.algorithms.fsm.dimspan.config.DIMSpanConstants;
+import org.gradoop.flink.algorithms.fsm.common.config.FSMConstants;
 import org.gradoop.flink.algorithms.fsm.dimspan.config.DataflowStep;
 import org.gradoop.flink.algorithms.fsm.dimspan.config.DictionaryType;
 import org.gradoop.flink.algorithms.fsm.dimspan.functions.conversion.DFSCodeToEPGMGraphTransaction;
@@ -204,7 +204,7 @@ public class DIMSpan {
 
     DataSet<GraphWithPatternEmbeddingsMap> grownEmbeddings = iterative
       .map(new GrowFrequentPatterns(gSpan, fsmConfig))
-      .withBroadcastSet(frequentPatterns, DIMSpanConstants.FREQUENT_PATTERNS)
+      .withBroadcastSet(frequentPatterns, FSMConstants.FREQUENT_PATTERNS)
       .filter(new NotObsolete());
 
     // ITERATION FOOTER
@@ -225,9 +225,9 @@ public class DIMSpan {
   private DataSet<GraphTransaction> postProcess(DataSet<WithCount<int[]>> encodedOutput) {
     return encodedOutput
       .map(new DFSCodeToEPGMGraphTransaction(fsmConfig))
-      .withBroadcastSet(vertexDictionary, DIMSpanConstants.VERTEX_DICTIONARY)
-      .withBroadcastSet(edgeDictionary, DIMSpanConstants.EDGE_DICTIONARY)
-      .withBroadcastSet(graphCount, DIMSpanConstants.GRAPH_COUNT);
+      .withBroadcastSet(vertexDictionary, FSMConstants.VERTEX_DICTIONARY)
+      .withBroadcastSet(edgeDictionary, FSMConstants.EDGE_DICTIONARY)
+      .withBroadcastSet(graphCount, FSMConstants.GRAPH_COUNT);
   }
 
   /**
@@ -252,7 +252,7 @@ public class DIMSpan {
 
     return graphs
       .map(new EncodeAndPruneVertices())
-      .withBroadcastSet(vertexDictionary, DIMSpanConstants.VERTEX_DICTIONARY);
+      .withBroadcastSet(vertexDictionary, FSMConstants.VERTEX_DICTIONARY);
   }
 
   /**
@@ -273,7 +273,7 @@ public class DIMSpan {
 
     return graphs
       .map(new EncodeAndPruneEdges(fsmConfig))
-      .withBroadcastSet(edgeDictionary, DIMSpanConstants.EDGE_DICTIONARY);
+      .withBroadcastSet(edgeDictionary, FSMConstants.EDGE_DICTIONARY);
   }
 
   /**
@@ -291,7 +291,7 @@ public class DIMSpan {
         .groupBy(0)
         .sum(1)
         .filter(new Frequent<>())
-        .withBroadcastSet(minFrequency, DIMSpanConstants.MIN_FREQUENCY);
+        .withBroadcastSet(minFrequency, FSMConstants.MIN_FREQUENCY);
 
       // disabled
     } else {
@@ -335,7 +335,7 @@ public class DIMSpan {
 
     patterns = patterns
       .filter(new Frequent<>())
-      .withBroadcastSet(minFrequency, DIMSpanConstants.MIN_FREQUENCY);
+      .withBroadcastSet(minFrequency, FSMConstants.MIN_FREQUENCY);
 
     if (fsmConfig.getPatternVerificationInStep() == DataflowStep.FILTER) {
       patterns = patterns

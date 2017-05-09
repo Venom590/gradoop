@@ -21,11 +21,11 @@ import com.google.common.collect.Maps;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.flink.api.common.functions.RichMapFunction;
 import org.apache.flink.configuration.Configuration;
+import org.gradoop.flink.algorithms.fsm.common.config.FSMConfigBase;
 import org.gradoop.flink.algorithms.fsm.dimspan.comparison.DFSBranchComparator;
 import org.gradoop.flink.algorithms.fsm.dimspan.comparison.DirectedDFSBranchComparator;
 import org.gradoop.flink.algorithms.fsm.dimspan.comparison.UndirectedDFSBranchComparator;
-import org.gradoop.flink.algorithms.fsm.dimspan.config.DIMSpanConfig;
-import org.gradoop.flink.algorithms.fsm.dimspan.config.DIMSpanConstants;
+import org.gradoop.flink.algorithms.fsm.common.config.FSMConstants;
 import org.gradoop.flink.algorithms.fsm.dimspan.model.GraphUtils;
 import org.gradoop.flink.algorithms.fsm.dimspan.model.SearchGraphUtils;
 import org.gradoop.flink.algorithms.fsm.dimspan.model.UnsortedSearchGraphUtils;
@@ -65,7 +65,7 @@ public class EncodeAndPruneEdges extends RichMapFunction<LabeledGraphIntString, 
    *
    * @param fsmConfig FSM configuration
    */
-  public EncodeAndPruneEdges(DIMSpanConfig fsmConfig) {
+  public EncodeAndPruneEdges(FSMConfigBase fsmConfig) {
     sortGraph = fsmConfig.isBranchConstraintEnabled();
     branchComparator = fsmConfig.isDirected() ?
       new DirectedDFSBranchComparator() :
@@ -78,7 +78,7 @@ public class EncodeAndPruneEdges extends RichMapFunction<LabeledGraphIntString, 
 
     // create inverse dictionary at broadcast reception
     String[] broadcast = getRuntimeContext()
-      .<String[]>getBroadcastVariable(DIMSpanConstants.EDGE_DICTIONARY).get(0);
+      .<String[]>getBroadcastVariable(FSMConstants.EDGE_DICTIONARY).get(0);
 
     for (int i = 0; i < broadcast.length; i++) {
       edgeDictionary.put(broadcast[i], i);

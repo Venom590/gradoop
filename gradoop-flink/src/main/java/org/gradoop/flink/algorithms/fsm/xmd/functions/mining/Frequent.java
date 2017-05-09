@@ -19,7 +19,7 @@ package org.gradoop.flink.algorithms.fsm.xmd.functions.mining;
 
 import org.apache.flink.api.common.functions.RichFilterFunction;
 import org.apache.flink.configuration.Configuration;
-import org.gradoop.flink.algorithms.fsm.xmd.config.DIMSpanConstants;
+import org.gradoop.flink.algorithms.fsm.common.config.FSMConstants;
 import org.gradoop.flink.model.api.tuples.Countable;
 
 /**
@@ -39,7 +39,7 @@ public class Frequent<T extends Countable> extends RichFilterFunction<T> {
     super.open(parameters);
 
     this.minFrequency = getRuntimeContext()
-      .<Long>getBroadcastVariable(DIMSpanConstants.MIN_FREQUENCY).get(0);
+      .<Long>getBroadcastVariable(FSMConstants.MIN_FREQUENCY).get(0);
   }
 
   @Override

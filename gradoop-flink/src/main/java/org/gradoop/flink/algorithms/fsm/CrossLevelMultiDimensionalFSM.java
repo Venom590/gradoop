@@ -19,12 +19,12 @@ package org.gradoop.flink.algorithms.fsm;
 
 import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.operators.IterativeDataSet;
+import org.gradoop.flink.algorithms.fsm.common.config.FSMConstants;
+import org.gradoop.flink.algorithms.fsm.dimspan.config.DictionaryType;
 import org.gradoop.flink.algorithms.fsm.xmd.comparison.AlphabeticalLabelComparator;
 import org.gradoop.flink.algorithms.fsm.xmd.comparison.InverseProportionalLabelComparator;
 import org.gradoop.flink.algorithms.fsm.xmd.comparison.LabelComparator;
 import org.gradoop.flink.algorithms.fsm.xmd.comparison.ProportionalLabelComparator;
-import org.gradoop.flink.algorithms.fsm.xmd.config.DIMSpanConstants;
-import org.gradoop.flink.algorithms.fsm.xmd.config.DictionaryType;
 import org.gradoop.flink.algorithms.fsm.xmd.config.XMDConfig;
 import org.gradoop.flink.algorithms.fsm.xmd.functions.conversion.DFSCodeToEPGMGraphTransaction;
 import org.gradoop.flink.algorithms.fsm.xmd.functions.conversion.EPGMGraphTransactionToMultidimensionalGraph;
@@ -183,7 +183,7 @@ public class CrossLevelMultiDimensionalFSM implements UnaryCollectionToCollectio
     // Execute edge label pruning and dictionary coding
     DataSet<EncodedMDGraph> encodedGraphs = graphs
       .map(new Encode(fsmConfig))
-      .withBroadcastSet(labelDictionary, DIMSpanConstants.LABEL_DICTIONARY);
+      .withBroadcastSet(labelDictionary, FSMConstants.LABEL_DICTIONARY);
 
     // return all non-obsolete encoded graphs
     return encodedGraphs
@@ -224,7 +224,7 @@ public class CrossLevelMultiDimensionalFSM implements UnaryCollectionToCollectio
 
     DataSet<MDGraphWithPatternEmbeddingsMap> grownEmbeddings = iterative
       .map(new GrowFrequentPatterns(gSpan))
-      .withBroadcastSet(frequentPatterns, DIMSpanConstants.FREQUENT_PATTERNS)
+      .withBroadcastSet(frequentPatterns, FSMConstants.FREQUENT_PATTERNS)
       .filter(new NotObsolete());
 
     // ITERATION FOOTER
@@ -245,8 +245,8 @@ public class CrossLevelMultiDimensionalFSM implements UnaryCollectionToCollectio
   private DataSet<GraphTransaction> postProcess(DataSet<WithCount<int[]>> encodedOutput) {
     return encodedOutput
       .map(new DFSCodeToEPGMGraphTransaction())
-      .withBroadcastSet(labelDictionary, DIMSpanConstants.LABEL_DICTIONARY)
-      .withBroadcastSet(graphCount, DIMSpanConstants.GRAPH_COUNT);
+      .withBroadcastSet(labelDictionary, FSMConstants.LABEL_DICTIONARY)
+      .withBroadcastSet(graphCount, FSMConstants.GRAPH_COUNT);
   }
 
   /**
@@ -282,7 +282,7 @@ public class CrossLevelMultiDimensionalFSM implements UnaryCollectionToCollectio
         .groupBy(0)
         .sum(1)
         .filter(new Frequent<>())
-        .withBroadcastSet(minFrequency, DIMSpanConstants.MIN_FREQUENCY);
+        .withBroadcastSet(minFrequency, FSMConstants.MIN_FREQUENCY);
 
       // disabled
     } else {
@@ -304,7 +304,7 @@ public class CrossLevelMultiDimensionalFSM implements UnaryCollectionToCollectio
       .groupBy(0)
       .sum(1)
       .filter(new Frequent<>())
-      .withBroadcastSet(minFrequency, DIMSpanConstants.MIN_FREQUENCY)
+      .withBroadcastSet(minFrequency, FSMConstants.MIN_FREQUENCY)
       .filter(new VerifyPattern(gSpan));
   }
 

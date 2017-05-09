@@ -20,7 +20,7 @@ package org.gradoop.flink.algorithms.fsm.transactional;
 import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.operators.FilterOperator;
 import org.apache.flink.api.java.operators.IterativeDataSet;
-import org.gradoop.flink.algorithms.fsm.dimspan.config.DIMSpanConstants;
+import org.gradoop.flink.algorithms.fsm.common.config.FSMConstants;
 import org.gradoop.flink.algorithms.fsm.transactional.common.TFSMConstants;
 import org.gradoop.flink.algorithms.fsm.transactional.tle.functions.CCSSingleEdgeEmbeddings;
 import org.gradoop.flink.algorithms.fsm.transactional.tle.functions.CCSSubgraphDecoder;
@@ -195,7 +195,7 @@ public class CategoryCharacteristicSubgraphs
       .groupBy(0, 1)
       .sum(2)
       .filter(new CategoryFrequent())
-      .withBroadcastSet(categoryMinFrequencies, DIMSpanConstants.MIN_FREQUENCY)
+      .withBroadcastSet(categoryMinFrequencies, FSMConstants.MIN_FREQUENCY)
       .map(new LabelOnly())
       .distinct();
 
@@ -209,7 +209,7 @@ public class CategoryCharacteristicSubgraphs
       .groupBy(0, 1)
       .sum(2)
       .filter(new CategoryFrequent())
-      .withBroadcastSet(categoryMinFrequencies, DIMSpanConstants.MIN_FREQUENCY)
+      .withBroadcastSet(categoryMinFrequencies, FSMConstants.MIN_FREQUENCY)
       .map(new LabelOnly())
       .distinct();
 
@@ -247,7 +247,7 @@ public class CategoryCharacteristicSubgraphs
       .groupBy(0)
       .reduceGroup(new CategoryFrequentAndInteresting(minInterestingness))
       .withBroadcastSet(categoryCounts, TFSMConstants.GRAPH_COUNT)
-      .withBroadcastSet(categoryMinFrequencies, DIMSpanConstants.MIN_FREQUENCY);
+      .withBroadcastSet(categoryMinFrequencies, FSMConstants.MIN_FREQUENCY);
   }
 
   @Override

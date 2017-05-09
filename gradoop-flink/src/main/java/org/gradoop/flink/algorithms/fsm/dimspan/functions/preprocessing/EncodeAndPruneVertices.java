@@ -21,7 +21,7 @@ import com.google.common.collect.Maps;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.flink.api.common.functions.RichMapFunction;
 import org.apache.flink.configuration.Configuration;
-import org.gradoop.flink.algorithms.fsm.dimspan.config.DIMSpanConstants;
+import org.gradoop.flink.algorithms.fsm.common.config.FSMConstants;
 import org.gradoop.flink.algorithms.fsm.dimspan.tuples.LabeledGraphIntString;
 import org.gradoop.flink.algorithms.fsm.dimspan.tuples.LabeledGraphStringString;
 
@@ -49,7 +49,7 @@ public class EncodeAndPruneVertices
 
     // create inverse dictionary at broadcast reception
     String[] broadcast = getRuntimeContext()
-      .<String[]>getBroadcastVariable(DIMSpanConstants.VERTEX_DICTIONARY).get(0);
+      .<String[]>getBroadcastVariable(FSMConstants.VERTEX_DICTIONARY).get(0);
 
     for (int i = 0; i < broadcast.length; i++) {
       vertexDictionary.put(broadcast[i], i);

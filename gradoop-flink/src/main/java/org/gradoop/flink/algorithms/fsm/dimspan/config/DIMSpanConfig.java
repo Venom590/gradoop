@@ -19,29 +19,14 @@ package org.gradoop.flink.algorithms.fsm.dimspan.config;
 
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
+import org.gradoop.flink.algorithms.fsm.common.config.FSMConfigBase;
 
-import java.io.Serializable;
 import java.util.List;
 
 /**
  * Frequent subgraph mining configuration.
  */
-public class DIMSpanConfig implements Serializable {
-
-  /**
-   * support threshold for subgraphs to be considered to be frequenct
-   */
-  private float minSupport = 1.0f;
-
-  /**
-   * Direction mode (true=directed; false=undirected)
-   */
-  private boolean directed = true;
-
-  /**
-   * Dictionary type used for dictionary coding.
-   */
-  private DictionaryType dictionaryType = DictionaryType.INVERSE_PROPORTIONAL;
+public class DIMSpanConfig extends FSMConfigBase {
 
   /**
    * Flag to enable embedding compression (true=enabled).
@@ -64,18 +49,12 @@ public class DIMSpanConfig implements Serializable {
   private DataflowStep patternVerificationInStep = DataflowStep.COMBINE;
 
   /**
-   * Flag to enable branch constraint in pattern growth (true=enabled).
-   */
-  private boolean branchConstraintEnabled = true;
-
-  /**
    * valued constructor
    * @param minSupport minimum relative support of a subgraph
    * @param directed direction mode
    */
   public DIMSpanConfig(float minSupport, boolean directed) {
-    this.minSupport = minSupport;
-    this.directed = directed;
+    super(minSupport, directed);
   }
 
   @Override
@@ -94,42 +73,6 @@ public class DIMSpanConfig implements Serializable {
     parameters.add("pattern validation @ " + patternVerificationInStep.toString());
 
     return StringUtils.join(parameters, "|");
-  }
-
-  /**
-   * Convenience method for string formatting of enum parameters.
-   *
-   * @param parameter parameter name
-   * @param enabled parameter value
-   *
-   * @return string representation of the parameter and its value
-   */
-  private String getParameterEnabled(String parameter, boolean enabled) {
-    return parameter + " " + (enabled ? "enabled" : "disabled");
-  }
-
-  public float getMinSupport() {
-    return minSupport;
-  }
-
-  public void setMinSupport(float minSupport) {
-    this.minSupport = minSupport;
-  }
-
-  public boolean isDirected() {
-    return directed;
-  }
-
-  public void setDirected(boolean directed) {
-    this.directed = directed;
-  }
-
-  public DictionaryType getDictionaryType() {
-    return dictionaryType;
-  }
-
-  public void setDictionaryType(DictionaryType dictionaryType) {
-    this.dictionaryType = dictionaryType;
   }
 
   public boolean isEmbeddingCompressionEnabled() {
@@ -164,11 +107,4 @@ public class DIMSpanConfig implements Serializable {
     this.patternVerificationInStep = patternVerificationInStep;
   }
 
-  public void setBranchConstraintEnabled(boolean branchConstraintEnabled) {
-    this.branchConstraintEnabled = branchConstraintEnabled;
-  }
-
-  public boolean isBranchConstraintEnabled() {
-    return branchConstraintEnabled;
-  }
 }

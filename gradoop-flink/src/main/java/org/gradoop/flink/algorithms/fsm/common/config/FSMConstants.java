@@ -15,12 +15,12 @@
  * along with Gradoop. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.gradoop.flink.algorithms.fsm.xmd.config;
+package org.gradoop.flink.algorithms.fsm.common.config;
 
 /**
  * Collection of broadcast dataset names used for frequent subgraph mining.
  */
-public class DIMSpanConstants {
+public class FSMConstants {
 
   /**
    * Cardinality of input graph collection size.
@@ -35,12 +35,17 @@ public class DIMSpanConstants {
   /**
    * Vertex label dictionary.
    */
-  public static final String LABEL_DICTIONARY = "vld";
+  public static final String VERTEX_DICTIONARY = "vld";
 
   /**
    * Edge label Dictionary
    */
   public static final String EDGE_DICTIONARY = "eld";
+
+  /**
+   * Generic label Dictionary
+   */
+  public static final String LABEL_DICTIONARY = "d";
 
   /**
    * set of frequent patterns

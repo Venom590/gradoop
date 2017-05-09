@@ -19,36 +19,17 @@ package org.gradoop.flink.algorithms.fsm.xmd.config;
 
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
+import org.gradoop.flink.algorithms.fsm.common.config.FSMConfigBase;
 
-import java.io.Serializable;
 import java.util.List;
 
 /**
  * Frequent subgraph mining configuration.
  */
-public class XMDConfig implements Serializable {
+public class XMDConfig extends FSMConfigBase {
 
-  /**
-   * support threshold for subgraphs to be considered to be frequenct
-   */
-  private float minSupport = 1.0f;
-
-  /**
-   * Direction mode (true=directed; false=undirected)
-   */
-  private boolean directed = true;
-
-  /**
-   * Dictionary type used for dictionary coding.
-   */
-  private DictionaryType dictionaryType = DictionaryType.INVERSE_PROPORTIONAL;
-
-  /**
-   * Flag to enable branch constraint in pattern growth (true=enabled).
-   */
-  private boolean branchConstraintEnabled = true;
-  private String dimensionKeyPrefix;
-  private String dimensionValueSeparator;
+  private final String dimensionKeyPrefix;
+  private final String dimensionValueSeparator;
 
   /**
    * valued constructor
@@ -56,8 +37,9 @@ public class XMDConfig implements Serializable {
    * @param directed direction mode
    */
   public XMDConfig(float minSupport, boolean directed) {
-    this.minSupport = minSupport;
-    this.directed = directed;
+    super(minSupport, directed);
+    dimensionKeyPrefix = "dim";
+    dimensionValueSeparator = ".";
   }
 
   @Override
@@ -71,50 +53,6 @@ public class XMDConfig implements Serializable {
     parameters.add(getParameterEnabled("branch constraint", branchConstraintEnabled));
 
     return StringUtils.join(parameters, "|");
-  }
-
-  /**
-   * Convenience method for string formatting of enum parameters.
-   *
-   * @param parameter parameter name
-   * @param enabled parameter value
-   *
-   * @return string representation of the parameter and its value
-   */
-  private String getParameterEnabled(String parameter, boolean enabled) {
-    return parameter + " " + (enabled ? "enabled" : "disabled");
-  }
-
-  public float getMinSupport() {
-    return minSupport;
-  }
-
-  public void setMinSupport(float minSupport) {
-    this.minSupport = minSupport;
-  }
-
-  public boolean isDirected() {
-    return directed;
-  }
-
-  public void setDirected(boolean directed) {
-    this.directed = directed;
-  }
-
-  public DictionaryType getDictionaryType() {
-    return dictionaryType;
-  }
-
-  public void setDictionaryType(DictionaryType dictionaryType) {
-    this.dictionaryType = dictionaryType;
-  }
-
-  public void setBranchConstraintEnabled(boolean branchConstraintEnabled) {
-    this.branchConstraintEnabled = branchConstraintEnabled;
-  }
-
-  public boolean isBranchConstraintEnabled() {
-    return branchConstraintEnabled;
   }
 
   public String getDimensionKeyPrefix() {

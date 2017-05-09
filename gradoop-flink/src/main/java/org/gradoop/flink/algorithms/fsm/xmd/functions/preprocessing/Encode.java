@@ -21,10 +21,10 @@ import com.google.common.collect.Maps;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.flink.api.common.functions.RichMapFunction;
 import org.apache.flink.configuration.Configuration;
+import org.gradoop.flink.algorithms.fsm.common.config.FSMConstants;
 import org.gradoop.flink.algorithms.fsm.xmd.comparison.DFSBranchComparator;
 import org.gradoop.flink.algorithms.fsm.xmd.comparison.DirectedDFSBranchComparator;
 import org.gradoop.flink.algorithms.fsm.xmd.comparison.UndirectedDFSBranchComparator;
-import org.gradoop.flink.algorithms.fsm.xmd.config.DIMSpanConstants;
 import org.gradoop.flink.algorithms.fsm.xmd.config.XMDConfig;
 import org.gradoop.flink.algorithms.fsm.xmd.model.GraphUtils;
 import org.gradoop.flink.algorithms.fsm.xmd.model.SearchGraphUtils;
@@ -79,7 +79,7 @@ public class Encode extends RichMapFunction<MultidimensionalGraph, EncodedMDGrap
 
     // create inverse dictionary at broadcast reception
     String[] broadcast = getRuntimeContext()
-      .<String[]>getBroadcastVariable(DIMSpanConstants.LABEL_DICTIONARY).get(0);
+      .<String[]>getBroadcastVariable(FSMConstants.LABEL_DICTIONARY).get(0);
 
     for (int i = 0; i < broadcast.length; i++) {
       dictionary.put(broadcast[i], i);

@@ -26,7 +26,7 @@ import org.gradoop.common.model.impl.properties.PropertyValueUtils;
 import org.gradoop.examples.AbstractRunner;
 import org.gradoop.flink.algorithms.btgs.BusinessTransactionGraphs;
 import org.gradoop.flink.algorithms.fsm.TransactionalFSM;
-import org.gradoop.flink.algorithms.fsm.dimspan.config.DIMSpanConstants;
+import org.gradoop.flink.algorithms.fsm.common.config.FSMConstants;
 import org.gradoop.flink.io.impl.dot.DOTDataSink;
 import org.gradoop.flink.io.impl.json.JSONDataSource;
 import org.gradoop.flink.model.api.functions.TransformationFunction;
@@ -129,7 +129,7 @@ public class FrequentLossPatterns
     GraphHead transformed) {
 
     BigDecimal support = current
-      .getPropertyValue(DIMSpanConstants.SUPPORT_KEY)
+      .getPropertyValue(FSMConstants.SUPPORT_KEY)
       .getBigDecimal().setScale(2, ROUND_HALF_UP);
 
     String newLabel = current.getLabel() + " (" + support + ")";

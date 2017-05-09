@@ -26,7 +26,7 @@ import org.gradoop.common.model.impl.pojo.Edge;
 import org.gradoop.common.model.impl.pojo.GraphHead;
 import org.gradoop.common.model.impl.pojo.Vertex;
 import org.gradoop.flink.algorithms.fsm.dimspan.config.DIMSpanConfig;
-import org.gradoop.flink.algorithms.fsm.dimspan.config.DIMSpanConstants;
+import org.gradoop.flink.algorithms.fsm.common.config.FSMConstants;
 import org.gradoop.flink.algorithms.fsm.dimspan.config.DataflowStep;
 import org.gradoop.flink.algorithms.fsm.dimspan.model.GraphUtils;
 import org.gradoop.flink.algorithms.fsm.dimspan.model.GraphUtilsBase;
@@ -82,14 +82,14 @@ public class DFSCodeToEPGMGraphTransaction
     super.open(parameters);
 
     vertexDictionary = getRuntimeContext()
-      .<String[]>getBroadcastVariable(DIMSpanConstants.VERTEX_DICTIONARY).get(0);
+      .<String[]>getBroadcastVariable(FSMConstants.VERTEX_DICTIONARY).get(0);
 
     edgeDictionary = getRuntimeContext()
-      .<String[]>getBroadcastVariable(DIMSpanConstants.EDGE_DICTIONARY).get(0);
+      .<String[]>getBroadcastVariable(FSMConstants.EDGE_DICTIONARY).get(0);
 
 
     graphCount = getRuntimeContext()
-      .<Long>getBroadcastVariable(DIMSpanConstants.GRAPH_COUNT).get(0);
+      .<Long>getBroadcastVariable(FSMConstants.GRAPH_COUNT).get(0);
   }
 
   @Override
@@ -106,8 +106,8 @@ public class DFSCodeToEPGMGraphTransaction
 
     // GRAPH HEAD
     GraphHead graphHead = new GraphHead(GradoopId.get(), "", null);
-    graphHead.setLabel(DIMSpanConstants.FREQUENT_PATTERN_LABEL);
-    graphHead.setProperty(DIMSpanConstants.SUPPORT_KEY, (float) frequency / graphCount);
+    graphHead.setLabel(FSMConstants.FREQUENT_PATTERN_LABEL);
+    graphHead.setProperty(FSMConstants.SUPPORT_KEY, (float) frequency / graphCount);
 
     GradoopIdList graphIds = GradoopIdList.fromExisting(graphHead.getId());
 

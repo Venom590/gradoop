@@ -20,8 +20,8 @@ package org.gradoop.flink.algorithms.fsm.xmd.functions.mining;
 import com.google.common.collect.Lists;
 import org.apache.flink.api.common.functions.RichMapFunction;
 import org.apache.flink.configuration.Configuration;
+import org.gradoop.flink.algorithms.fsm.common.config.FSMConstants;
 import org.gradoop.flink.algorithms.fsm.xmd.comparison.DFSCodeComparator;
-import org.gradoop.flink.algorithms.fsm.xmd.config.DIMSpanConstants;
 import org.gradoop.flink.algorithms.fsm.xmd.gspan.GSpanLogic;
 import org.gradoop.flink.algorithms.fsm.xmd.model.Simple16Compressor;
 import org.gradoop.flink.algorithms.fsm.xmd.tuples.MDGraphWithPatternEmbeddingsMap;
@@ -80,7 +80,7 @@ public class GrowFrequentPatterns
     // broadcast reception
 
     patternFrequencies =
-      getRuntimeContext().getBroadcastVariable(DIMSpanConstants.FREQUENT_PATTERNS);
+      getRuntimeContext().getBroadcastVariable(FSMConstants.FREQUENT_PATTERNS);
 
     int patternCount = patternFrequencies.size();
 
