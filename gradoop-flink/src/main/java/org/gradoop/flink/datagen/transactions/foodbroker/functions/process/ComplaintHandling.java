@@ -38,6 +38,7 @@ import org.gradoop.flink.datagen.transactions.foodbroker.config.FoodBrokerConfig
 import org.gradoop.flink.representation.transactional.GraphTransaction;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
@@ -178,7 +179,7 @@ public class ComplaintHandling
 
         Vertex ticket = newTicket(
           Constants.BADQUALITY_TICKET_PROBLEM,
-          deliveryNote.getPropertyValue(Constants.DATE_KEY).getLong());
+          deliveryNote.getPropertyValue(Constants.DATE_KEY).getDate());
         grantSalesRefund(badSalesOrderLines, ticket);
         claimPurchRefund(currentPurchOrderLines, ticket);
       }
@@ -196,8 +197,8 @@ public class ComplaintHandling
     // Iterate over all delivery notes and take the sales order lines of
     // sales orders, which are late
     for (Vertex deliveryNote : deliveryNotes) {
-      if (deliveryNote.getPropertyValue(Constants.DATE_KEY).getLong() >
-        salesOrder.getPropertyValue(Constants.DELIVERYDATE_KEY).getLong()) {
+      if (deliveryNote.getPropertyValue(Constants.DATE_KEY).getDate()
+        .isAfter(salesOrder.getPropertyValue(Constants.DELIVERYDATE_KEY).getDate())) {
         lateSalesOrderLines.addAll(salesOrderLines);
       }
     }
@@ -209,10 +210,8 @@ public class ComplaintHandling
       for (Edge salesOrderLine : lateSalesOrderLines) {
         latePurchOrderLines.add(getCorrespondingPurchOrderLine(salesOrderLine.getId()));
       }
-      Calendar calendar = Calendar.getInstance();
-      calendar.setTimeInMillis(salesOrder.getPropertyValue(Constants.DELIVERYDATE_KEY).getLong());
-      calendar.add(Calendar.DATE, 1);
-      long createdDate = calendar.getTimeInMillis();
+      LocalDate createdDate = salesOrder.getPropertyValue(Constants.DELIVERYDATE_KEY)
+        .getDate().plusDays(1);
 
       // Create ticket and process refunds
       Vertex ticket = newTicket(Constants.LATEDELIVERY_TICKET_PROBLEM, createdDate);
@@ -228,7 +227,7 @@ public class ComplaintHandling
    * @param createdAt creation date
    * @return the ticket
    */
-  private Vertex newTicket(String problem, long createdAt) {
+  private Vertex newTicket(String problem, LocalDate createdAt) {
     String label = Constants.TICKET_VERTEX_LABEL;
     Properties properties = new Properties();
     // properties
@@ -294,7 +293,7 @@ public class ComplaintHandling
       Properties properties = new Properties();
       properties.set(Constants.SUPERTYPE_KEY, Constants.SUPERCLASS_VALUE_TRANSACTIONAL);
       properties.set(
-        Constants.DATE_KEY, ticket.getPropertyValue(Constants.CREATEDATE_KEY).getLong());
+        Constants.DATE_KEY, ticket.getPropertyValue(Constants.CREATEDATE_KEY).getDate());
       String bid = createBusinessIdentifier(currentId++, Constants.SALESINVOICE_ACRONYM);
       properties.set(Constants.SOURCEID_KEY, Constants.CIT_ACRONYM + "_" + bid);
       properties.set(Constants.REVENUE_KEY, refundAmount);
@@ -345,7 +344,7 @@ public class ComplaintHandling
 
       properties.set(Constants.SUPERTYPE_KEY, Constants.SUPERCLASS_VALUE_TRANSACTIONAL);
       properties.set(
-        Constants.DATE_KEY, ticket.getPropertyValue(Constants.CREATEDATE_KEY).getLong());
+        Constants.DATE_KEY, ticket.getPropertyValue(Constants.CREATEDATE_KEY).getDate());
       String bid = createBusinessIdentifier(
         currentId++, Constants.PURCHINVOICE_ACRONYM);
       properties.set(Constants.SOURCEID_KEY, Constants.CIT_ACRONYM + "_" + bid);
