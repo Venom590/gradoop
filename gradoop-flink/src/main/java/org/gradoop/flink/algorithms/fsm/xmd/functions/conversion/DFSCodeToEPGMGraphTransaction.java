@@ -25,9 +25,7 @@ import org.gradoop.common.model.impl.id.GradoopIdList;
 import org.gradoop.common.model.impl.pojo.Edge;
 import org.gradoop.common.model.impl.pojo.GraphHead;
 import org.gradoop.common.model.impl.pojo.Vertex;
-import org.gradoop.flink.algorithms.fsm.xmd.config.XMDConfig;
 import org.gradoop.flink.algorithms.fsm.xmd.config.DIMSpanConstants;
-import org.gradoop.flink.algorithms.fsm.xmd.config.DataflowStep;
 import org.gradoop.flink.algorithms.fsm.xmd.model.GraphUtils;
 import org.gradoop.flink.algorithms.fsm.xmd.model.GraphUtilsBase;
 import org.gradoop.flink.algorithms.fsm.xmd.model.Simple16Compressor;
@@ -43,10 +41,6 @@ public class DFSCodeToEPGMGraphTransaction
   extends RichMapFunction<WithCount<int[]>, GraphTransaction> {
 
 
-  /**
-   * flag to enable decompression of patterns (true=enabled)
-   */
-  private final boolean uncompressPatterns;
   /**
    * frequent vertex labels
    */
@@ -66,16 +60,6 @@ public class DFSCodeToEPGMGraphTransaction
    * Input graph collection size
    */
   private long graphCount;
-
-  /**
-   * Constructor.
-   *
-   * @param fsmConfig FSM configuration.
-   */
-  public DFSCodeToEPGMGraphTransaction(XMDConfig fsmConfig) {
-    this.uncompressPatterns =
-      ! fsmConfig.getPatternCompressionInStep().equals(DataflowStep.WITHOUT);
-  }
 
   @Override
   public void open(Configuration parameters) throws Exception {
@@ -97,9 +81,8 @@ public class DFSCodeToEPGMGraphTransaction
 
     int[] pattern = patternWithCount.getObject();
 
-    if (uncompressPatterns) {
-      pattern = Simple16Compressor.uncompress(pattern);
-    }
+    pattern = Simple16Compressor.uncompress(pattern);
+
 
     long frequency = patternWithCount.getCount();
 

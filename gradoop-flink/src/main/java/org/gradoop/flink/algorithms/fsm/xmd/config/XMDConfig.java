@@ -45,11 +45,6 @@ public class XMDConfig implements Serializable {
     dictionaryType = DictionaryType.INVERSE_PROPORTIONAL;
 
   /**
-   * Flag to set dataflow position of pattern compression.
-   */
-  private DataflowStep patternCompressionInStep = DataflowStep.MAP;
-
-  /**
    * Flag to set dataflow position of pattern validation.
    */
   private DataflowStep patternVerificationInStep = DataflowStep.COMBINE;
@@ -79,7 +74,6 @@ public class XMDConfig implements Serializable {
 
     parameters.add(getParameterEnabled("branch constraint", branchConstraintEnabled));
 
-    parameters.add("pattern compression @ " + patternCompressionInStep.toString());
     parameters.add("pattern validation @ " + patternVerificationInStep.toString());
 
     return StringUtils.join(parameters, "|");
@@ -119,14 +113,6 @@ public class XMDConfig implements Serializable {
 
   public void setDictionaryType(DictionaryType dictionaryType) {
     this.dictionaryType = dictionaryType;
-  }
-
-  public void setPatternCompressionInStep(DataflowStep patternCompressionInStep) {
-    this.patternCompressionInStep = patternCompressionInStep;
-  }
-
-  public DataflowStep getPatternCompressionInStep() {
-    return patternCompressionInStep;
   }
 
   public DataflowStep getPatternVerificationInStep() {

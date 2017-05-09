@@ -170,7 +170,7 @@ public class DIMSpan {
   protected DataSet<WithCount<int[]>> mine(DataSet<int[]> graphs) {
 
     DataSet<GraphWithPatternEmbeddingsMap> searchSpace = graphs
-      .map(new InitSingleEdgePatternEmbeddingsMap(gSpan, fsmConfig));
+      .map(new InitSingleEdgePatternEmbeddingsMap(gSpan));
 
     // Workaround to support multiple data sinks: create pseudo-graph (collector),
     // which embedding map will be used to union all k-edge frequent patterns
@@ -215,7 +215,7 @@ public class DIMSpan {
    */
   private DataSet<GraphTransaction> postProcess(DataSet<WithCount<int[]>> encodedOutput) {
     return encodedOutput
-      .map(new DFSCodeToEPGMGraphTransaction(fsmConfig))
+      .map(new DFSCodeToEPGMGraphTransaction())
       .withBroadcastSet(vertexDictionary, DIMSpanConstants.VERTEX_DICTIONARY)
       .withBroadcastSet(edgeDictionary, DIMSpanConstants.EDGE_DICTIONARY)
       .withBroadcastSet(graphCount, DIMSpanConstants.GRAPH_COUNT);
@@ -308,13 +308,9 @@ public class DIMSpan {
 
     if (fsmConfig.getPatternVerificationInStep() == DataflowStep.COMBINE) {
       patterns = patterns
-        .filter(new VerifyPattern(gSpan, fsmConfig));
+        .filter(new VerifyPattern(gSpan));
     }
 
-    if (fsmConfig.getPatternCompressionInStep() == DataflowStep.COMBINE) {
-      patterns = patterns
-        .map(new CompressPattern());
-    }
 
     // REDUCE
 
@@ -330,12 +326,7 @@ public class DIMSpan {
 
     if (fsmConfig.getPatternVerificationInStep() == DataflowStep.FILTER) {
       patterns = patterns
-        .filter(new VerifyPattern(gSpan, fsmConfig));
-    }
-
-    if (fsmConfig.getPatternCompressionInStep() == DataflowStep.FILTER) {
-      patterns = patterns
-        .map(new CompressPattern());
+        .filter(new VerifyPattern(gSpan));
     }
 
     return patterns;

@@ -18,8 +18,6 @@
 package org.gradoop.flink.algorithms.fsm.xmd.functions.mining;
 
 import org.apache.flink.api.common.functions.MapFunction;
-import org.gradoop.flink.algorithms.fsm.xmd.config.XMDConfig;
-import org.gradoop.flink.algorithms.fsm.xmd.config.DataflowStep;
 import org.gradoop.flink.algorithms.fsm.xmd.gspan.GSpanLogic;
 import org.gradoop.flink.algorithms.fsm.xmd.model.Simple16Compressor;
 import org.gradoop.flink.algorithms.fsm.xmd.tuples.GraphWithPatternEmbeddingsMap;
@@ -37,22 +35,12 @@ public class InitSingleEdgePatternEmbeddingsMap implements MapFunction<int[], Gr
   private final GSpanLogic gSpan;
 
   /**
-   * flag to enable pattern compression (true=enabled)
-   */
-  private final boolean compressPatterns;
-
-  /**
    * Constructor.
    *
    * @param gSpan pattern generation logic
-   * @param fsmConfig FSM configuration
    */
-  public InitSingleEdgePatternEmbeddingsMap(GSpanLogic gSpan, XMDConfig fsmConfig) {
+  public InitSingleEdgePatternEmbeddingsMap(GSpanLogic gSpan) {
     this.gSpan = gSpan;
-
-    // set compression flags depending on configuration
-    compressPatterns =
-      fsmConfig.getPatternCompressionInStep() == DataflowStep.MAP;
   }
 
   @Override
@@ -60,9 +48,8 @@ public class InitSingleEdgePatternEmbeddingsMap implements MapFunction<int[], Gr
 
     PatternEmbeddingsMap map = gSpan.getSingleEdgePatternEmbeddings(graph);
 
-    if (compressPatterns) {
-      Simple16Compressor.compressPatterns(map);
-    }
+    Simple16Compressor.compressPatterns(map);
+
 
     Simple16Compressor.compressEmbeddings(map);
 

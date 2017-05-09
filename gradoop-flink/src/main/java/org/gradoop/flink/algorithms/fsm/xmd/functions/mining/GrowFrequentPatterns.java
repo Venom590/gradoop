@@ -64,16 +64,6 @@ public class GrowFrequentPatterns
   private final GSpanLogic gSpan;
 
   /**
-   * flag to enable pattern compression (true=enabled)
-   */
-  private final boolean compressPatterns;
-
-  /**
-   * flag to enable pattern decompression (true=enabled)
-   */
-  private final boolean uncompressFrequentPatterns;
-
-  /**
    * flag to enable pattern verification before counting (true=enabled)
    */
   private final boolean validatePatterns;
@@ -88,10 +78,6 @@ public class GrowFrequentPatterns
 
     // set pattern growth logic for directed or undirected mode
     this.gSpan = gSpan;
-
-    // cache compression flags
-    compressPatterns = fsmConfig.getPatternCompressionInStep() == DataflowStep.MAP;
-    uncompressFrequentPatterns = fsmConfig.getPatternCompressionInStep() != DataflowStep.WITHOUT;
 
     // cache validation flag
     validatePatterns = fsmConfig.getPatternVerificationInStep() == DataflowStep.MAP;
@@ -114,9 +100,8 @@ public class GrowFrequentPatterns
       int[] pattern = patternWithCount.getObject();
 
       // uncompress
-      if (uncompressFrequentPatterns) {
-        pattern = Simple16Compressor.uncompress(pattern);
-      }
+      pattern = Simple16Compressor.uncompress(pattern);
+
       frequentPatterns.add(pattern);
     }
 
@@ -131,8 +116,7 @@ public class GrowFrequentPatterns
       rightmostPaths.add(gSpan.getRightmostPathTimes(pattern));
 
       // TODO: directly store compressed patterns at reception
-      compressedFrequentPatterns
-        .add(compressPatterns ? Simple16Compressor.compress(pattern) : pattern);
+      compressedFrequentPatterns.add(Simple16Compressor.compress(pattern));
     }
   }
 
@@ -172,9 +156,8 @@ public class GrowFrequentPatterns
 
       // compress patterns and embedding, if configured
       // NOTE: graphs will remain compressed
-      if (compressPatterns) {
-        Simple16Compressor.compressPatterns(pair.getMap());
-      }
+      Simple16Compressor.compressPatterns(pair.getMap());
+
 
       Simple16Compressor.compressEmbeddings(pair.getMap());
     }

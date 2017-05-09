@@ -18,7 +18,6 @@
 package org.gradoop.flink.algorithms.fsm.xmd.functions.mining;
 
 import org.apache.flink.api.common.functions.FilterFunction;
-import org.gradoop.flink.algorithms.fsm.xmd.config.XMDConfig;
 import org.gradoop.flink.algorithms.fsm.xmd.gspan.GSpanLogic;
 import org.gradoop.flink.algorithms.fsm.xmd.model.GraphUtils;
 import org.gradoop.flink.algorithms.fsm.xmd.model.GraphUtilsBase;
@@ -36,11 +35,6 @@ public class VerifyPattern implements FilterFunction<WithCount<int[]>> {
   private final GSpanLogic gSpan;
 
   /**
-   * flag, to enable decompression before verification (true=enabled)
-   */
-  private final boolean uncompress;
-
-  /**
    * util methods ti interpret int-array encoded patterns
    */
   private GraphUtils graphUtils = new GraphUtilsBase();
@@ -49,12 +43,9 @@ public class VerifyPattern implements FilterFunction<WithCount<int[]>> {
    * Constructor.
    *
    * @param gSpan validation logic
-   * @param fsmConfig FSM configuration
    */
-  public VerifyPattern(GSpanLogic gSpan, XMDConfig fsmConfig) {
+  public VerifyPattern(GSpanLogic gSpan) {
     this.gSpan = gSpan;
-    uncompress = fsmConfig.getPatternCompressionInStep()
-      .compareTo(fsmConfig.getPatternVerificationInStep()) < 0;
   }
 
   @Override
@@ -63,9 +54,8 @@ public class VerifyPattern implements FilterFunction<WithCount<int[]>> {
 
     boolean valid = true;
 
-    if (uncompress) {
-      pattern = Simple16Compressor.uncompress(pattern);
-    }
+    pattern = Simple16Compressor.uncompress(pattern);
+
 
     if (graphUtils.getEdgeCount(pattern) > 1) {
       valid = gSpan.isMinimal(pattern);
