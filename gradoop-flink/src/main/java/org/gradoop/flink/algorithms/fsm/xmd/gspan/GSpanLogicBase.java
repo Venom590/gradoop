@@ -19,7 +19,7 @@ package org.gradoop.flink.algorithms.fsm.xmd.gspan;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.gradoop.flink.algorithms.fsm.xmd.comparison.DFSCodeComparator;
-import org.gradoop.flink.algorithms.fsm.xmd.config.DIMSpanConfig;
+import org.gradoop.flink.algorithms.fsm.xmd.config.XMDConfig;
 import org.gradoop.flink.algorithms.fsm.xmd.model.DFSCodeUtils;
 import org.gradoop.flink.algorithms.fsm.xmd.model.SearchGraphUtils;
 import org.gradoop.flink.algorithms.fsm.xmd.model.SortedSearchGraphUtils;
@@ -59,7 +59,7 @@ public abstract class GSpanLogicBase implements GSpanLogic, Serializable {
    * Constructor
    * @param fsmConfig FSM configuration
    */
-  protected GSpanLogicBase(DIMSpanConfig fsmConfig) {
+  protected GSpanLogicBase(XMDConfig fsmConfig) {
     // set graph utils depending on the branch constraint configuration
     branchConstraintEnabled = fsmConfig.isBranchConstraintEnabled();
     graphUtils = branchConstraintEnabled ?

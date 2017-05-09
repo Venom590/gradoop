@@ -18,7 +18,7 @@
 package org.gradoop.flink.algorithms.fsm.xmd.functions.mining;
 
 import org.apache.flink.api.common.functions.FilterFunction;
-import org.gradoop.flink.algorithms.fsm.xmd.config.DIMSpanConfig;
+import org.gradoop.flink.algorithms.fsm.xmd.config.XMDConfig;
 import org.gradoop.flink.algorithms.fsm.xmd.gspan.GSpanLogic;
 import org.gradoop.flink.algorithms.fsm.xmd.model.GraphUtils;
 import org.gradoop.flink.algorithms.fsm.xmd.model.GraphUtilsBase;
@@ -51,7 +51,7 @@ public class VerifyPattern implements FilterFunction<WithCount<int[]>> {
    * @param gSpan validation logic
    * @param fsmConfig FSM configuration
    */
-  public VerifyPattern(GSpanLogic gSpan, DIMSpanConfig fsmConfig) {
+  public VerifyPattern(GSpanLogic gSpan, XMDConfig fsmConfig) {
     this.gSpan = gSpan;
     uncompress = fsmConfig.getPatternCompressionInStep()
       .compareTo(fsmConfig.getPatternVerificationInStep()) < 0;

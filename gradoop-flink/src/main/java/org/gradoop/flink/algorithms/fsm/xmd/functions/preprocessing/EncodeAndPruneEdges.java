@@ -24,7 +24,7 @@ import org.apache.flink.configuration.Configuration;
 import org.gradoop.flink.algorithms.fsm.xmd.comparison.DFSBranchComparator;
 import org.gradoop.flink.algorithms.fsm.xmd.comparison.DirectedDFSBranchComparator;
 import org.gradoop.flink.algorithms.fsm.xmd.comparison.UndirectedDFSBranchComparator;
-import org.gradoop.flink.algorithms.fsm.xmd.config.DIMSpanConfig;
+import org.gradoop.flink.algorithms.fsm.xmd.config.XMDConfig;
 import org.gradoop.flink.algorithms.fsm.xmd.config.DIMSpanConstants;
 import org.gradoop.flink.algorithms.fsm.xmd.model.GraphUtils;
 import org.gradoop.flink.algorithms.fsm.xmd.model.SearchGraphUtils;
@@ -65,7 +65,7 @@ public class EncodeAndPruneEdges extends RichMapFunction<LabeledGraphIntString, 
    *
    * @param fsmConfig FSM configuration
    */
-  public EncodeAndPruneEdges(DIMSpanConfig fsmConfig) {
+  public EncodeAndPruneEdges(XMDConfig fsmConfig) {
     sortGraph = fsmConfig.isBranchConstraintEnabled();
     branchComparator = fsmConfig.isDirected() ?
       new DirectedDFSBranchComparator() :

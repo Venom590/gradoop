@@ -18,7 +18,7 @@
 package org.gradoop.flink.algorithms.fsm.xmd.gspan;
 
 
-import org.gradoop.flink.algorithms.fsm.xmd.config.DIMSpanConfig;
+import org.gradoop.flink.algorithms.fsm.xmd.config.XMDConfig;
 import org.gradoop.flink.algorithms.fsm.xmd.tuples.PatternEmbeddingsMap;
 
 /**
@@ -31,7 +31,7 @@ public class UndirectedGSpanLogic extends GSpanLogicBase {
    *
    * @param fsmConfig FSM configuration
    */
-  public UndirectedGSpanLogic(DIMSpanConfig fsmConfig) {
+  public UndirectedGSpanLogic(XMDConfig fsmConfig) {
     super(fsmConfig);
   }
 

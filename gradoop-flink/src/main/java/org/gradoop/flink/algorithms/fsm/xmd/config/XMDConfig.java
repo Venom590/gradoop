@@ -26,7 +26,7 @@ import java.util.List;
 /**
  * Frequent subgraph mining configuration.
  */
-public class DIMSpanConfig implements Serializable {
+public class XMDConfig implements Serializable {
 
   /**
    * support threshold for subgraphs to be considered to be frequenct
@@ -43,11 +43,6 @@ public class DIMSpanConfig implements Serializable {
    */
   private DictionaryType
     dictionaryType = DictionaryType.INVERSE_PROPORTIONAL;
-
-  /**
-   * Flag to enable embedding compression (true=enabled).
-   */
-  private boolean embeddingCompressionEnabled = true;
 
   /**
    * Flag to enable graph compression (true=enabled).
@@ -74,7 +69,7 @@ public class DIMSpanConfig implements Serializable {
    * @param minSupport minimum relative support of a subgraph
    * @param directed direction mode
    */
-  public DIMSpanConfig(float minSupport, boolean directed) {
+  public XMDConfig(float minSupport, boolean directed) {
     this.minSupport = minSupport;
     this.directed = directed;
   }
@@ -89,8 +84,7 @@ public class DIMSpanConfig implements Serializable {
 
     parameters.add(getParameterEnabled("branch constraint", branchConstraintEnabled));
     parameters.add(getParameterEnabled("graph compression", graphCompressionEnabled));
-    parameters.add(
-      getParameterEnabled("embedding compression", embeddingCompressionEnabled));
+
     parameters.add("pattern compression @ " + patternCompressionInStep.toString());
     parameters.add("pattern validation @ " + patternVerificationInStep.toString());
 
@@ -131,14 +125,6 @@ public class DIMSpanConfig implements Serializable {
 
   public void setDictionaryType(DictionaryType dictionaryType) {
     this.dictionaryType = dictionaryType;
-  }
-
-  public boolean isEmbeddingCompressionEnabled() {
-    return embeddingCompressionEnabled;
-  }
-
-  public void setEmbeddingCompressionEnabled(boolean embeddingCompressionEnabled) {
-    this.embeddingCompressionEnabled = embeddingCompressionEnabled;
   }
 
   public boolean isGraphCompressionEnabled() {

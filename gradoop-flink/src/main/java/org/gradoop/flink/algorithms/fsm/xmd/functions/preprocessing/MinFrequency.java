@@ -18,7 +18,7 @@
 package org.gradoop.flink.algorithms.fsm.xmd.functions.preprocessing;
 
 import org.apache.flink.api.common.functions.MapFunction;
-import org.gradoop.flink.algorithms.fsm.xmd.config.DIMSpanConfig;
+import org.gradoop.flink.algorithms.fsm.xmd.config.XMDConfig;
 
 import java.math.BigDecimal;
 
@@ -30,13 +30,13 @@ public class MinFrequency implements MapFunction<Long, Long> {
   /**
    * FSM configuration
    */
-  private final DIMSpanConfig fsmConfig;
+  private final XMDConfig fsmConfig;
 
   /**
    * Constructor.
    * @param fsmConfig FSM configuration
    */
-  public MinFrequency(DIMSpanConfig fsmConfig) {
+  public MinFrequency(XMDConfig fsmConfig) {
     this.fsmConfig = fsmConfig;
   }
 

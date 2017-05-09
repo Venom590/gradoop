@@ -21,7 +21,7 @@ import com.google.common.collect.Lists;
 import org.apache.flink.api.common.functions.RichMapFunction;
 import org.apache.flink.configuration.Configuration;
 import org.gradoop.flink.algorithms.fsm.xmd.comparison.DFSCodeComparator;
-import org.gradoop.flink.algorithms.fsm.xmd.config.DIMSpanConfig;
+import org.gradoop.flink.algorithms.fsm.xmd.config.XMDConfig;
 import org.gradoop.flink.algorithms.fsm.xmd.config.DIMSpanConstants;
 import org.gradoop.flink.algorithms.fsm.xmd.config.DataflowStep;
 import org.gradoop.flink.algorithms.fsm.xmd.gspan.GSpanLogic;
@@ -79,11 +79,6 @@ public class GrowFrequentPatterns
   private final boolean uncompressFrequentPatterns;
 
   /**
-   * flag to enable embedding compression (true=enabled)
-   */
-  private final boolean compressEmbeddings;
-
-  /**
    * flag to enable pattern verification before counting (true=enabled)
    */
   private final boolean validatePatterns;
@@ -94,14 +89,13 @@ public class GrowFrequentPatterns
    * @param gSpan pattern growth logic
    * @param fsmConfig FSM Configuration
    */
-  public GrowFrequentPatterns(GSpanLogic gSpan, DIMSpanConfig fsmConfig) {
+  public GrowFrequentPatterns(GSpanLogic gSpan, XMDConfig fsmConfig) {
 
     // set pattern growth logic for directed or undirected mode
     this.gSpan = gSpan;
 
     // cache compression flags
     compressGraphs = fsmConfig.isGraphCompressionEnabled();
-    compressEmbeddings = fsmConfig.isEmbeddingCompressionEnabled();
     compressPatterns = fsmConfig.getPatternCompressionInStep() == DataflowStep.MAP;
     uncompressFrequentPatterns = fsmConfig.getPatternCompressionInStep() != DataflowStep.WITHOUT;
 
@@ -166,7 +160,7 @@ public class GrowFrequentPatterns
 
       // execute pattern growth for all supported frequent patterns
       PatternEmbeddingsMap childMap = gSpan.growPatterns(graph, pair.getMap(),
-        frequentPatterns, rightmostPaths, compressEmbeddings, compressedFrequentPatterns);
+        frequentPatterns, rightmostPaths, true, compressedFrequentPatterns);
 
       // drop non-minimal patterns if configured to be executed here
       if (validatePatterns) {
@@ -193,9 +187,7 @@ public class GrowFrequentPatterns
         Simple16Compressor.compressPatterns(pair.getMap());
       }
 
-      if (compressEmbeddings) {
-        Simple16Compressor.compressEmbeddings(pair.getMap());
-      }
+      Simple16Compressor.compressEmbeddings(pair.getMap());
     }
 
     return pair;

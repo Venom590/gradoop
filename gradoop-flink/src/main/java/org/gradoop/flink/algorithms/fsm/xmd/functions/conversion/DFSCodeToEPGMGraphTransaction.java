@@ -25,7 +25,7 @@ import org.gradoop.common.model.impl.id.GradoopIdList;
 import org.gradoop.common.model.impl.pojo.Edge;
 import org.gradoop.common.model.impl.pojo.GraphHead;
 import org.gradoop.common.model.impl.pojo.Vertex;
-import org.gradoop.flink.algorithms.fsm.xmd.config.DIMSpanConfig;
+import org.gradoop.flink.algorithms.fsm.xmd.config.XMDConfig;
 import org.gradoop.flink.algorithms.fsm.xmd.config.DIMSpanConstants;
 import org.gradoop.flink.algorithms.fsm.xmd.config.DataflowStep;
 import org.gradoop.flink.algorithms.fsm.xmd.model.GraphUtils;
@@ -72,7 +72,7 @@ public class DFSCodeToEPGMGraphTransaction
    *
    * @param fsmConfig FSM configuration.
    */
-  public DFSCodeToEPGMGraphTransaction(DIMSpanConfig fsmConfig) {
+  public DFSCodeToEPGMGraphTransaction(XMDConfig fsmConfig) {
     this.uncompressPatterns =
       ! fsmConfig.getPatternCompressionInStep().equals(DataflowStep.WITHOUT);
   }

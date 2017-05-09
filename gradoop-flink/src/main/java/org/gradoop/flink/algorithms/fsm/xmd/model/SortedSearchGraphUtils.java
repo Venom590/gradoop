@@ -20,7 +20,7 @@ package org.gradoop.flink.algorithms.fsm.xmd.model;
 import org.gradoop.flink.algorithms.fsm.xmd.comparison.DFSBranchComparator;
 import org.gradoop.flink.algorithms.fsm.xmd.comparison.DirectedDFSBranchComparator;
 import org.gradoop.flink.algorithms.fsm.xmd.comparison.UndirectedDFSBranchComparator;
-import org.gradoop.flink.algorithms.fsm.xmd.config.DIMSpanConfig;
+import org.gradoop.flink.algorithms.fsm.xmd.config.XMDConfig;
 
 /**
  * Util methods to interpret and manipulate sorted int-array encoded graphs
@@ -37,7 +37,7 @@ public class SortedSearchGraphUtils extends SearchGraphUtilsBase {
    *
    * @param fsmConfig FSM configuration
    */
-  public SortedSearchGraphUtils(DIMSpanConfig fsmConfig) {
+  public SortedSearchGraphUtils(XMDConfig fsmConfig) {
     this.comparator = fsmConfig.isDirected() ?
       new DirectedDFSBranchComparator() :
       new UndirectedDFSBranchComparator();

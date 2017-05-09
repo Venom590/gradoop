@@ -26,7 +26,7 @@ import org.gradoop.flink.algorithms.fsm.xmd.comparison.AlphabeticalLabelComparat
 import org.gradoop.flink.algorithms.fsm.xmd.comparison.InverseProportionalLabelComparator;
 import org.gradoop.flink.algorithms.fsm.xmd.comparison.LabelComparator;
 import org.gradoop.flink.algorithms.fsm.xmd.comparison.ProportionalLabelComparator;
-import org.gradoop.flink.algorithms.fsm.xmd.config.DIMSpanConfig;
+import org.gradoop.flink.algorithms.fsm.xmd.config.XMDConfig;
 import org.gradoop.flink.algorithms.fsm.xmd.config.DIMSpanConstants;
 import org.gradoop.flink.algorithms.fsm.xmd.config.DataflowStep;
 import org.gradoop.flink.algorithms.fsm.xmd.config.DictionaryType;
@@ -63,7 +63,7 @@ public class DIMSpan {
   /**
    * FSM configuration
    */
-  protected final DIMSpanConfig fsmConfig;
+  protected final XMDConfig fsmConfig;
 
   /**
    * input graph collection cardinality
@@ -101,7 +101,7 @@ public class DIMSpan {
    *
    * @param fsmConfig FSM configuration
    */
-  public DIMSpan(DIMSpanConfig fsmConfig) {
+  public DIMSpan(XMDConfig fsmConfig) {
     this.fsmConfig = fsmConfig;
 
     // set gSpan implementation depending on direction mode
