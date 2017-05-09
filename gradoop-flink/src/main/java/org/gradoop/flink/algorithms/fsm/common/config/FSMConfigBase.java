@@ -1,10 +1,8 @@
 package org.gradoop.flink.algorithms.fsm.common.config;
 
-import org.gradoop.flink.algorithms.fsm.dimspan.config.DictionaryType;
-
 import java.io.Serializable;
 
-public abstract class FSMConfigBase implements Serializable {
+public abstract class FSMConfigBase implements FSMConfig {
   /**
    * support threshold for subgraphs to be considered to be frequenct
    */
@@ -39,34 +37,42 @@ public abstract class FSMConfigBase implements Serializable {
     return parameter + " " + (enabled ? "enabled" : "disabled");
   }
 
+  @Override
   public float getMinSupport() {
     return minSupport;
   }
 
+  @Override
   public void setMinSupport(float minSupport) {
     this.minSupport = minSupport;
   }
 
+  @Override
   public boolean isDirected() {
     return directed;
   }
 
+  @Override
   public void setDirected(boolean directed) {
     this.directed = directed;
   }
 
+  @Override
   public DictionaryType getDictionaryType() {
     return dictionaryType;
   }
 
+  @Override
   public void setDictionaryType(DictionaryType dictionaryType) {
     this.dictionaryType = dictionaryType;
   }
 
+  @Override
   public void setBranchConstraintEnabled(boolean branchConstraintEnabled) {
     this.branchConstraintEnabled = branchConstraintEnabled;
   }
 
+  @Override
   public boolean isBranchConstraintEnabled() {
     return branchConstraintEnabled;
   }

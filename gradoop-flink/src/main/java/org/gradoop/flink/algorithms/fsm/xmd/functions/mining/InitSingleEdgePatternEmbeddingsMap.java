@@ -18,11 +18,11 @@
 package org.gradoop.flink.algorithms.fsm.xmd.functions.mining;
 
 import org.apache.flink.api.common.functions.MapFunction;
-import org.gradoop.flink.algorithms.fsm.xmd.gspan.GSpanLogic;
+import org.gradoop.flink.algorithms.fsm.common.gspan.GSpanLogic;
+import org.gradoop.flink.algorithms.fsm.common.tuples.PatternEmbeddingsMap;
 import org.gradoop.flink.algorithms.fsm.xmd.model.Simple16Compressor;
 import org.gradoop.flink.algorithms.fsm.xmd.tuples.EncodedMDGraph;
 import org.gradoop.flink.algorithms.fsm.xmd.tuples.MDGraphWithPatternEmbeddingsMap;
-import org.gradoop.flink.algorithms.fsm.xmd.tuples.PatternEmbeddingsMap;
 
 
 /**

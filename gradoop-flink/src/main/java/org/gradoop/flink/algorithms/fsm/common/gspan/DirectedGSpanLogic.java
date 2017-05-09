@@ -15,36 +15,41 @@
  * along with Gradoop. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.gradoop.flink.algorithms.fsm.dimspan.gspan;
+package org.gradoop.flink.algorithms.fsm.common.gspan;
 
 
 import org.gradoop.flink.algorithms.fsm.common.config.FSMConfigBase;
-import org.gradoop.flink.algorithms.fsm.dimspan.tuples.PatternEmbeddingsMap;
+import org.gradoop.flink.algorithms.fsm.dimspan.model.GraphUtils;
+import org.gradoop.flink.algorithms.fsm.dimspan.model.GraphUtilsBase;
+import org.gradoop.flink.algorithms.fsm.common.tuples.PatternEmbeddingsMap;
 
 /**
- * Provides methods for logic related to the gSpan algorithm in undirected mode.
+ * Provides methods for logic related to the gSpan algorithm in directed mode.
  */
-public class UndirectedGSpanLogic extends GSpanLogicBase {
+public class DirectedGSpanLogic extends GSpanLogicBase {
+
+  /**
+   * util methods to interpret and manipulate int-array encoded graphs
+   */
+  private final GraphUtils graphUtils = new GraphUtilsBase();
 
   /**
    * Constructor.
    *
    * @param fsmConfig FSM configuration
    */
-  public UndirectedGSpanLogic(FSMConfigBase fsmConfig) {
+  public DirectedGSpanLogic(FSMConfigBase fsmConfig) {
     super(fsmConfig);
   }
 
   @Override
   protected boolean getSingleEdgePatternIsOutgoing(int[] graph, int edgeId, boolean loop) {
-    // extensions are always considered to be outgoing in undirected mode
-    return true;
+    return loop || graphUtils.isOutgoing(graph, edgeId);
   }
 
   @Override
   protected boolean getExtensionIsOutgoing(int[] graph, int edgeId, boolean fromFrom) {
-    // extensions are always considered to be outgoing in undirected mode
-    return true;
+    return fromFrom == graphUtils.isOutgoing(graph, edgeId);
   }
 
   @Override
@@ -52,10 +57,6 @@ public class UndirectedGSpanLogic extends GSpanLogicBase {
     int[] pattern, int[] vertexIds, int[] edgeIds, int fromLabel, int toLabel, boolean loop) {
 
     patternEmbeddings.put(pattern, vertexIds, edgeIds);
-
-    // create a second embedding for 1-edge automorphism
-    if (fromLabel == toLabel && !loop) {
-      patternEmbeddings.put(pattern, new int[] {vertexIds[1], vertexIds[0]}, edgeIds);
-    }
   }
+
 }

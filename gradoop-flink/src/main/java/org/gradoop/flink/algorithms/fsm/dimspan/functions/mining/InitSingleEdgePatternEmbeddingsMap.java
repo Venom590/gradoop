@@ -19,9 +19,9 @@ package org.gradoop.flink.algorithms.fsm.dimspan.functions.mining;
 
 import org.apache.flink.api.common.functions.MapFunction;
 import org.gradoop.flink.algorithms.fsm.dimspan.config.DIMSpanConfig;
-import org.gradoop.flink.algorithms.fsm.dimspan.config.DataflowStep;
-import org.gradoop.flink.algorithms.fsm.dimspan.gspan.GSpanLogic;
-import org.gradoop.flink.algorithms.fsm.dimspan.tuples.PatternEmbeddingsMap;
+import org.gradoop.flink.algorithms.fsm.common.config.DataflowStep;
+import org.gradoop.flink.algorithms.fsm.common.gspan.GSpanLogic;
+import org.gradoop.flink.algorithms.fsm.common.tuples.PatternEmbeddingsMap;
 import org.gradoop.flink.algorithms.fsm.dimspan.model.Simple16Compressor;
 import org.gradoop.flink.algorithms.fsm.dimspan.tuples.GraphWithPatternEmbeddingsMap;
 

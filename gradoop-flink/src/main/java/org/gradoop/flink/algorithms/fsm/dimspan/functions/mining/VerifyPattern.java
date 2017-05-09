@@ -19,7 +19,7 @@ package org.gradoop.flink.algorithms.fsm.dimspan.functions.mining;
 
 import org.apache.flink.api.common.functions.FilterFunction;
 import org.gradoop.flink.algorithms.fsm.dimspan.config.DIMSpanConfig;
-import org.gradoop.flink.algorithms.fsm.dimspan.gspan.GSpanLogic;
+import org.gradoop.flink.algorithms.fsm.common.gspan.GSpanLogic;
 import org.gradoop.flink.algorithms.fsm.dimspan.model.GraphUtils;
 import org.gradoop.flink.algorithms.fsm.dimspan.model.GraphUtilsBase;
 import org.gradoop.flink.algorithms.fsm.dimspan.model.Simple16Compressor;

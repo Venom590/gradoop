@@ -15,16 +15,16 @@
  * along with Gradoop. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.gradoop.flink.algorithms.fsm.xmd.gspan;
+package org.gradoop.flink.algorithms.fsm.common.gspan;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.gradoop.flink.algorithms.fsm.xmd.comparison.DFSCodeComparator;
-import org.gradoop.flink.algorithms.fsm.xmd.config.XMDConfig;
-import org.gradoop.flink.algorithms.fsm.xmd.model.DFSCodeUtils;
-import org.gradoop.flink.algorithms.fsm.xmd.model.SearchGraphUtils;
-import org.gradoop.flink.algorithms.fsm.xmd.model.SortedSearchGraphUtils;
-import org.gradoop.flink.algorithms.fsm.xmd.model.UnsortedSearchGraphUtils;
-import org.gradoop.flink.algorithms.fsm.xmd.tuples.PatternEmbeddingsMap;
+import org.gradoop.flink.algorithms.fsm.common.config.FSMConfig;
+import org.gradoop.flink.algorithms.fsm.dimspan.comparison.DFSCodeComparator;
+import org.gradoop.flink.algorithms.fsm.dimspan.model.DFSCodeUtils;
+import org.gradoop.flink.algorithms.fsm.dimspan.model.SearchGraphUtils;
+import org.gradoop.flink.algorithms.fsm.dimspan.model.SortedSearchGraphUtils;
+import org.gradoop.flink.algorithms.fsm.dimspan.model.UnsortedSearchGraphUtils;
+import org.gradoop.flink.algorithms.fsm.common.tuples.PatternEmbeddingsMap;
 
 import java.io.Serializable;
 import java.util.List;
@@ -59,7 +59,7 @@ public abstract class GSpanLogicBase implements GSpanLogic, Serializable {
    * Constructor
    * @param fsmConfig FSM configuration
    */
-  protected GSpanLogicBase(XMDConfig fsmConfig) {
+  protected GSpanLogicBase(FSMConfig fsmConfig) {
     // set graph utils depending on the branch constraint configuration
     branchConstraintEnabled = fsmConfig.isBranchConstraintEnabled();
     graphUtils = branchConstraintEnabled ?
@@ -284,11 +284,11 @@ public abstract class GSpanLogicBase implements GSpanLogic, Serializable {
 
             int[] childPattern = dfsCodeUtils.addExtension(parentPattern,
               toTime,
-              graphUtils.getFromLabel(graph, edgeId),
+              graphUtils.getToLabel(graph, edgeId),
               getExtensionIsOutgoing(graph, edgeId, false),
               graphUtils.getEdgeLabel(graph, edgeId),
               fromTime,
-              graphUtils.getToLabel(graph, edgeId)
+              graphUtils.getFromLabel(graph, edgeId)
             );
 
             int[] childVertexIds = parentVertexIds.clone();

@@ -1,8 +1,8 @@
 package org.gradoop.flink.algorithms.fsm;
 
 import org.gradoop.flink.algorithms.fsm.dimspan.config.DIMSpanConfig;
-import org.gradoop.flink.algorithms.fsm.dimspan.config.DataflowStep;
-import org.gradoop.flink.algorithms.fsm.dimspan.config.DictionaryType;
+import org.gradoop.flink.algorithms.fsm.common.config.DataflowStep;
+import org.gradoop.flink.algorithms.fsm.common.config.DictionaryType;
 import org.gradoop.flink.datagen.transactions.predictable.PredictableTransactionsGenerator;
 import org.gradoop.flink.model.GradoopFlinkTestBase;
 import org.gradoop.flink.model.impl.GraphCollection;

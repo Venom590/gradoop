@@ -19,6 +19,7 @@ package org.gradoop.flink.algorithms.fsm.dimspan.config;
 
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
+import org.gradoop.flink.algorithms.fsm.common.config.DataflowStep;
 import org.gradoop.flink.algorithms.fsm.common.config.FSMConfigBase;
 
 import java.util.List;

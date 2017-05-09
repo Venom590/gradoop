@@ -18,7 +18,7 @@
 package org.gradoop.flink.algorithms.fsm.xmd.functions.mining;
 
 import org.apache.flink.api.common.functions.FilterFunction;
-import org.gradoop.flink.algorithms.fsm.xmd.gspan.GSpanLogic;
+import org.gradoop.flink.algorithms.fsm.common.gspan.GSpanLogic;
 import org.gradoop.flink.algorithms.fsm.xmd.model.GraphUtils;
 import org.gradoop.flink.algorithms.fsm.xmd.model.GraphUtilsBase;
 import org.gradoop.flink.algorithms.fsm.xmd.model.Simple16Compressor;

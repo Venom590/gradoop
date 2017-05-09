@@ -15,26 +15,7 @@
  * along with Gradoop. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.gradoop.flink.algorithms.fsm.dimspan.config;
-
 /**
- * Options to execute single operation at different positions of the dataflow.
+ * Classes related to the gSpan logic applied within DIMSpan.
  */
-public enum DataflowStep implements Comparable<DataflowStep> {
-  /**
-   * After pattern-growth map function.
-   */
-  MAP,
-  /**
-   * After local pattern frequency counting.
-   */
-  COMBINE,
-  /**
-   * After pattern frequency pruning.
-   */
-  FILTER,
-  /**
-   * Never.
-   */
-  WITHOUT
-}
+package org.gradoop.flink.algorithms.fsm.common.gspan;

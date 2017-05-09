@@ -15,11 +15,11 @@
  * along with Gradoop. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.gradoop.flink.algorithms.fsm.xmd.gspan;
+package org.gradoop.flink.algorithms.fsm.common.gspan;
 
 
-import org.gradoop.flink.algorithms.fsm.xmd.config.XMDConfig;
-import org.gradoop.flink.algorithms.fsm.xmd.tuples.PatternEmbeddingsMap;
+import org.gradoop.flink.algorithms.fsm.common.config.FSMConfigBase;
+import org.gradoop.flink.algorithms.fsm.common.tuples.PatternEmbeddingsMap;
 
 /**
  * Provides methods for logic related to the gSpan algorithm in undirected mode.
@@ -31,7 +31,7 @@ public class UndirectedGSpanLogic extends GSpanLogicBase {
    *
    * @param fsmConfig FSM configuration
    */
-  public UndirectedGSpanLogic(XMDConfig fsmConfig) {
+  public UndirectedGSpanLogic(FSMConfigBase fsmConfig) {
     super(fsmConfig);
   }
 

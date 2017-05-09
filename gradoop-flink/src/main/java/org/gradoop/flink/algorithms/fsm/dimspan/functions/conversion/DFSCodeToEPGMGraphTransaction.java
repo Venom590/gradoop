@@ -27,7 +27,7 @@ import org.gradoop.common.model.impl.pojo.GraphHead;
 import org.gradoop.common.model.impl.pojo.Vertex;
 import org.gradoop.flink.algorithms.fsm.dimspan.config.DIMSpanConfig;
 import org.gradoop.flink.algorithms.fsm.common.config.FSMConstants;
-import org.gradoop.flink.algorithms.fsm.dimspan.config.DataflowStep;
+import org.gradoop.flink.algorithms.fsm.common.config.DataflowStep;
 import org.gradoop.flink.algorithms.fsm.dimspan.model.GraphUtils;
 import org.gradoop.flink.algorithms.fsm.dimspan.model.GraphUtilsBase;
 import org.gradoop.flink.algorithms.fsm.dimspan.model.Simple16Compressor;

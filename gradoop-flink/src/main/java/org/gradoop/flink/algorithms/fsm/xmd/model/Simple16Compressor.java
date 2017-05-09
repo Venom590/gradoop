@@ -19,7 +19,7 @@ package org.gradoop.flink.algorithms.fsm.xmd.model;
 
 import me.lemire.integercompression.IntCompressor;
 import me.lemire.integercompression.Simple16;
-import org.gradoop.flink.algorithms.fsm.xmd.tuples.PatternEmbeddingsMap;
+import org.gradoop.flink.algorithms.fsm.common.tuples.PatternEmbeddingsMap;
 
 /**
  * Functionality wrapper for Simple16 compression.

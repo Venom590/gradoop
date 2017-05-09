@@ -15,9 +15,9 @@
  * along with Gradoop. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.gradoop.flink.algorithms.fsm.xmd.gspan;
+package org.gradoop.flink.algorithms.fsm.common.gspan;
 
-import org.gradoop.flink.algorithms.fsm.xmd.tuples.PatternEmbeddingsMap;
+import org.gradoop.flink.algorithms.fsm.common.tuples.PatternEmbeddingsMap;
 
 import java.io.Serializable;
 import java.util.List;
@@ -47,9 +47,14 @@ public interface GSpanLogic extends Serializable {
    *
    * @return map of grown supported patterns
    */
-  PatternEmbeddingsMap growPatterns(int[] graph, PatternEmbeddingsMap parentMap,
-    List<int[]> frequentPatterns, List<int[]> rightmostPaths, boolean uncompressEmbeddings,
-    List<int[]> compressedPatterns);
+  PatternEmbeddingsMap growPatterns(
+    int[] graph,
+    PatternEmbeddingsMap parentMap,
+    List<int[]> frequentPatterns,
+    List<int[]> rightmostPaths,
+    boolean uncompressEmbeddings,
+    List<int[]> compressedPatterns
+  );
 
   /**
    * Verifies if a pattern in DFS-code model

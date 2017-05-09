@@ -17,6 +17,7 @@
 
 package org.gradoop.flink.algorithms.fsm.dimspan.model;
 
+import org.gradoop.flink.algorithms.fsm.common.config.FSMConfig;
 import org.gradoop.flink.algorithms.fsm.common.config.FSMConfigBase;
 import org.gradoop.flink.algorithms.fsm.dimspan.comparison.DFSBranchComparator;
 import org.gradoop.flink.algorithms.fsm.dimspan.comparison.DirectedDFSBranchComparator;
@@ -37,7 +38,7 @@ public class SortedSearchGraphUtils extends SearchGraphUtilsBase {
    *
    * @param fsmConfig FSM configuration
    */
-  public SortedSearchGraphUtils(FSMConfigBase fsmConfig) {
+  public SortedSearchGraphUtils(FSMConfig fsmConfig) {
     this.comparator = fsmConfig.isDirected() ?
       new DirectedDFSBranchComparator() :
       new UndirectedDFSBranchComparator();

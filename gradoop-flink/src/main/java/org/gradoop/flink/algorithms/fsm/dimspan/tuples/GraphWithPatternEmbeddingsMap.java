@@ -18,6 +18,7 @@
 package org.gradoop.flink.algorithms.fsm.dimspan.tuples;
 
 import org.apache.flink.api.java.tuple.Tuple2;
+import org.gradoop.flink.algorithms.fsm.common.tuples.PatternEmbeddingsMap;
 
 /**
  * (graph, pattern->embeddings)

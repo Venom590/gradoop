@@ -15,26 +15,26 @@
  * along with Gradoop. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.gradoop.flink.algorithms.fsm.dimspan.config;
+package org.gradoop.flink.algorithms.fsm.common.config;
 
 /**
- * Dictionary coding options
+ * Options to execute single operation at different positions of the dataflow.
  */
-public enum DictionaryType implements Comparable<DictionaryType> {
+public enum DataflowStep implements Comparable<DataflowStep> {
   /**
-   * No label pruning and alphabetical order.
+   * After pattern-growth map function.
    */
-  RANDOM,
+  MAP,
   /**
-   * Higher label frequency <=> lower label (original gSpan)
+   * After local pattern frequency counting.
    */
-  INVERSE_PROPORTIONAL,
+  COMBINE,
   /**
-   * Higher label frequency <=> higher label
+   * After pattern frequency pruning.
    */
-  PROPORTIONAL,
+  FILTER,
   /**
-   * label pruning but no alphabetical order.
+   * Never.
    */
-  FREQUENT
+  WITHOUT
 }

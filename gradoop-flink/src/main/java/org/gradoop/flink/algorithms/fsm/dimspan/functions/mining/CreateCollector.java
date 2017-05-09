@@ -18,7 +18,7 @@
 package org.gradoop.flink.algorithms.fsm.dimspan.functions.mining;
 
 import org.apache.flink.api.common.functions.MapFunction;
-import org.gradoop.flink.algorithms.fsm.dimspan.tuples.PatternEmbeddingsMap;
+import org.gradoop.flink.algorithms.fsm.common.tuples.PatternEmbeddingsMap;
 import org.gradoop.flink.algorithms.fsm.dimspan.tuples.GraphWithPatternEmbeddingsMap;
 
 /**
