@@ -21,16 +21,19 @@ import com.google.common.collect.Maps;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.flink.api.common.functions.RichMapFunction;
 import org.apache.flink.configuration.Configuration;
-import org.gradoop.flink.algorithms.fsm.common.config.FSMConstants;
+import org.gradoop.common.model.impl.id.GradoopId;
+import org.gradoop.common.model.impl.pojo.Edge;
+import org.gradoop.common.model.impl.pojo.Vertex;
 import org.gradoop.flink.algorithms.fsm.common.comparison.DFSBranchComparator;
 import org.gradoop.flink.algorithms.fsm.common.comparison.DirectedDFSBranchComparator;
 import org.gradoop.flink.algorithms.fsm.common.comparison.UndirectedDFSBranchComparator;
+import org.gradoop.flink.algorithms.fsm.common.config.FSMConstants;
 import org.gradoop.flink.algorithms.fsm.xmd.config.XMDConfig;
 import org.gradoop.flink.algorithms.fsm.xmd.model.GraphUtils;
 import org.gradoop.flink.algorithms.fsm.xmd.model.SearchGraphUtils;
 import org.gradoop.flink.algorithms.fsm.xmd.model.UnsortedSearchGraphUtils;
 import org.gradoop.flink.algorithms.fsm.xmd.tuples.EncodedMultilevelGraph;
-import org.gradoop.flink.algorithms.fsm.xmd.tuples.MultilevelGraph;
+import org.gradoop.flink.representation.transactional.GraphTransaction;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -39,7 +42,7 @@ import java.util.Map;
  * Encodes edge labels to integers.
  * Drops edges with infrequent labels and isolated vertices.
  */
-public class Encode extends RichMapFunction<MultilevelGraph, EncodedMultilevelGraph> {
+public class Encode extends RichMapFunction<GraphTransaction, EncodedMultilevelGraph> {
 
   /**
    * label dictionary
@@ -87,31 +90,32 @@ public class Encode extends RichMapFunction<MultilevelGraph, EncodedMultilevelGr
   }
 
   @Override
-  public EncodedMultilevelGraph map(MultilevelGraph inGraph) throws Exception {
+  public EncodedMultilevelGraph map(GraphTransaction inGraph) throws Exception {
 
     // VERTICES
 
-    String[][] stringVertexLabels = inGraph.getVertexLabels();
-
-    int[] vertexIdMap = new int[stringVertexLabels.length];
+    Map<GradoopId, Integer> vertexIdMap = Maps.newHashMap();
     int[] vertexTopLevels = new int[0];
     int[][] vertexLowerLevels = new int[0][];
 
-    int oldId = 0;
-    int newId = 0;
-    for (String[] stringVertexLabel : stringVertexLabels) {
+    int id = 0;
+    for (Vertex vertex : inGraph.getVertices()) {
 
-      String stringTopLevel = stringVertexLabel[0];
-      Integer intTopLevel = dictionary.get(stringTopLevel);
+      String label = vertex.getLabel();
+      String[] stringLevels = label.contains(FSMConstants.DIMENSION_SEPARATOR) ?
+        label.split(FSMConstants.DIMENSION_SEPARATOR) :
+        new String[] {label};
+
+      Integer intTopLevel = dictionary.get(stringLevels[0]);
 
       if (intTopLevel != null) {
         // vertex has frequent top level
 
-        int depth = stringVertexLabel.length;
+        int depth = stringLevels.length;
         int[] intLevels = new int[0];
 
         for (int i = 1; i < depth; i++) {
-          String stringLevel = stringVertexLabel[i];
+          String stringLevel = stringLevels[i];
           Integer intLevel = dictionary.get(stringLevel);
 
           if (intLevel != null) {
@@ -121,47 +125,47 @@ public class Encode extends RichMapFunction<MultilevelGraph, EncodedMultilevelGr
           }
         }
 
-        vertexIdMap[oldId] = newId;
-        ArrayUtils.add(vertexTopLevels, intTopLevel);
-        ArrayUtils.add(vertexLowerLevels, intLevels);
+        vertexIdMap.put(vertex.getId(), id);
+        vertexTopLevels = ArrayUtils.add(vertexTopLevels, intTopLevel);
+        vertexLowerLevels = ArrayUtils.add(vertexLowerLevels, intLevels);
 
-        newId++;
+        id++;
       }
-      oldId++;
     }
-
-    Arrays.sort(vertexLowerLevels);
 
     // EDGES
 
     int[][] dfsCodes = new int[0][];
 
-    String[] edgeLabels = inGraph.getEdgeLabels();
-
-    for (int edgeId = 0; edgeId < edgeLabels.length; edgeId++) {
-      Integer edgeLabel = dictionary.get(edgeLabels[edgeId]);
+    for (Edge edge : inGraph.getEdges()) {
+      Integer edgeLabel = dictionary.get(edge.getLabel());
 
       if (edgeLabel != null) {
         // edge has frequent label
 
-        int[] edge = inGraph.getEdges()[edgeId];
-        int sourceId = vertexIdMap[edge[0]];
-        int sourceLabel = vertexTopLevels[sourceId];
+        Integer sourceId = vertexIdMap.get(edge.getSourceId());
 
-        if (sourceId >= 0) {
-          // source vertex has frequent label
+        if (sourceId != null) {
+          int sourceLabel = vertexTopLevels[sourceId];
 
-          int targetId = vertexIdMap[edge[1]];
-          int targetLabel = vertexTopLevels[targetId];
+          if (sourceId >= 0) {
+            // source vertex has frequent label
 
-          if (targetId >= 0) {
-            int[] dfsCode = sourceLabel <= targetLabel ?
-              graphUtils.multiplex(
-                sourceId, sourceLabel, true, edgeLabel, targetId, targetLabel) :
-              graphUtils.multiplex(
-                targetId, targetLabel, false, edgeLabel, sourceId, sourceLabel);
+            Integer targetId = vertexIdMap.get(edge.getTargetId());
 
-            dfsCodes = ArrayUtils.add(dfsCodes, dfsCode);
+            if (targetId != null) {
+              int targetLabel = vertexTopLevels[targetId];
+
+              if (targetId >= 0) {
+                int[] dfsCode = sourceLabel <= targetLabel ?
+                  graphUtils.multiplex(
+                    sourceId, sourceLabel, true, edgeLabel, targetId, targetLabel) :
+                  graphUtils.multiplex(
+                    targetId, targetLabel, false, edgeLabel, sourceId, sourceLabel);
+
+                dfsCodes = ArrayUtils.add(dfsCodes, dfsCode);
+              }
+            }
           }
         }
       }

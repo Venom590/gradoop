@@ -20,8 +20,11 @@ package org.gradoop.flink.algorithms.fsm.xmd.functions.preprocessing;
 import com.google.common.collect.Sets;
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.util.Collector;
-import org.gradoop.flink.algorithms.fsm.xmd.tuples.MultilevelGraph;
+import org.gradoop.common.model.impl.pojo.Edge;
+import org.gradoop.common.model.impl.pojo.Vertex;
+import org.gradoop.flink.algorithms.fsm.common.config.FSMConstants;
 import org.gradoop.flink.model.impl.tuples.WithCount;
+import org.gradoop.flink.representation.transactional.GraphTransaction;
 
 import java.util.Set;
 
@@ -29,7 +32,7 @@ import java.util.Set;
  * graph -> (vertexLabel,1L),..
  */
 public class ReportLabels
-  implements FlatMapFunction<MultilevelGraph, WithCount<String>> {
+  implements FlatMapFunction<GraphTransaction, WithCount<String>> {
 
   /**
    * reuse tuple to avoid instantiations
@@ -38,23 +41,28 @@ public class ReportLabels
 
   @Override
   public void flatMap(
-    MultilevelGraph graph, Collector<WithCount<String>> out) throws Exception {
+    GraphTransaction graph, Collector<WithCount<String>> out) throws Exception {
 
-    String[][] vertexLabels = graph.getVertexLabels();
+    Set<String> labels = Sets.newHashSet();
 
-    Set<String> values = Sets.newHashSet();
+    for (Vertex vertex : graph.getVertices()) {
+      String label = vertex.getLabel();
+      String[] levels = label.split(FSMConstants.DIMENSION_SEPARATOR);
 
-    for (String[] vertexLabel : vertexLabels) {
-      for (String level : vertexLabel) {
-        values.add(level);
+      if (levels.length > 0) {
+        for (String level : levels) {
+          labels.add(level);
+        }
+      } {
+        labels.add(label);
       }
     }
 
-    for (String label : graph.getEdgeLabels()) {
-      values.add(label);
+    for (Edge edge : graph.getEdges()) {
+      labels.add(edge.getLabel());
     }
 
-    for (String label : values) {
+    for (String label : labels) {
       reuseTuple.setObject(label);
       out.collect(reuseTuple);
     }

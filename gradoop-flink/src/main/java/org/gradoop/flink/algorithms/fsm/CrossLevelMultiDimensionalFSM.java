@@ -27,7 +27,6 @@ import org.gradoop.flink.algorithms.fsm.common.comparison.LabelComparator;
 import org.gradoop.flink.algorithms.fsm.common.comparison.ProportionalLabelComparator;
 import org.gradoop.flink.algorithms.fsm.xmd.config.XMDConfig;
 import org.gradoop.flink.algorithms.fsm.xmd.functions.conversion.DFSCodeToEPGMGraphTransaction;
-import org.gradoop.flink.algorithms.fsm.xmd.functions.conversion.EPGMGraphTransactionToMultilevelGraph;
 import org.gradoop.flink.algorithms.fsm.xmd.functions.mining.CreateCollector;
 import org.gradoop.flink.algorithms.fsm.xmd.functions.mining.ExpandFrequentPatterns;
 import org.gradoop.flink.algorithms.fsm.xmd.functions.mining.Frequent;
@@ -47,7 +46,6 @@ import org.gradoop.flink.algorithms.fsm.common.gspan.GSpanLogic;
 import org.gradoop.flink.algorithms.fsm.common.gspan.UndirectedGSpanLogic;
 import org.gradoop.flink.algorithms.fsm.xmd.tuples.EncodedMultilevelGraph;
 import org.gradoop.flink.algorithms.fsm.xmd.tuples.MDGraphWithPatternEmbeddingsMap;
-import org.gradoop.flink.algorithms.fsm.xmd.tuples.MultilevelGraph;
 import org.gradoop.flink.model.api.operators.UnaryCollectionToCollectionOperator;
 import org.gradoop.flink.model.impl.GraphCollection;
 import org.gradoop.flink.model.impl.GraphTransactions;
@@ -132,10 +130,9 @@ public class CrossLevelMultiDimensionalFSM implements UnaryCollectionToCollectio
   public GraphCollection execute(GraphCollection collection) {
 
     // convert Gradoop graph collection to DIMSpan input format
-    DataSet<MultilevelGraph> input = collection
+    DataSet<GraphTransaction> input = collection
       .toTransactions()
-      .getTransactions()
-      .map(new EPGMGraphTransactionToMultilevelGraph(fsmConfig));
+      .getTransactions();
 
     // run DIMSpan
     DataSet<GraphTransaction> output = execute(input);
@@ -153,7 +150,7 @@ public class CrossLevelMultiDimensionalFSM implements UnaryCollectionToCollectio
    * @param input input graph collection
    * @return frequent patterns
    */
-  public DataSet<GraphTransaction> execute(DataSet<MultilevelGraph> input) {
+  public DataSet<GraphTransaction> execute(DataSet<GraphTransaction> input) {
 
     DataSet<EncodedMultilevelGraph> encodedInput = preProcess(input);
     DataSet<WithCount<int[]>> encodedOutput = mine(encodedInput);
@@ -167,7 +164,7 @@ public class CrossLevelMultiDimensionalFSM implements UnaryCollectionToCollectio
    * @param graphs input
    * @return preprocessed input
    */
-  private DataSet<EncodedMultilevelGraph> preProcess(DataSet<MultilevelGraph> graphs) {
+  private DataSet<EncodedMultilevelGraph> preProcess(DataSet<GraphTransaction> graphs) {
 
     // Determine cardinality of input graph collection
     this.graphCount = Count
@@ -255,7 +252,7 @@ public class CrossLevelMultiDimensionalFSM implements UnaryCollectionToCollectio
    * @param graphs graphs with string-labels
    * @return graphs with dictionary-encoded vertex labels
    */
-  private void createDictionary(DataSet<MultilevelGraph> graphs) {
+  private void createDictionary(DataSet<GraphTransaction> graphs) {
 
     // LABEL PRUNING
 
@@ -264,7 +261,6 @@ public class CrossLevelMultiDimensionalFSM implements UnaryCollectionToCollectio
 
     labelDictionary = getFrequentLabels(labels)
       .reduceGroup(new CreateDictionary(comparator));
-
   }
 
   /**
