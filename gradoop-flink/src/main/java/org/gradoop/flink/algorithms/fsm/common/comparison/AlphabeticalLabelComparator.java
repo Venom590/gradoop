@@ -15,13 +15,17 @@
  * along with Gradoop. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.gradoop.flink.algorithms.fsm.xmd.comparison;
+package org.gradoop.flink.algorithms.fsm.common.comparison;
 
-import java.io.Serializable;
-import java.util.Comparator;
+import org.gradoop.flink.model.impl.tuples.WithCount;
 
 /**
- * Compare initial extensions of DFS codes.
+ * Label comparator ignoring their frequency.
  */
-public interface DFSBranchComparator extends Comparator<int[]>, Serializable {
+public class AlphabeticalLabelComparator implements LabelComparator {
+
+  @Override
+  public int compare(WithCount<String> a, WithCount<String> b) {
+    return a.getObject().compareTo(b.getObject());
+  }
 }

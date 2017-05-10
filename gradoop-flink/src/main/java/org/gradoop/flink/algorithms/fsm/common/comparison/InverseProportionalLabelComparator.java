@@ -15,17 +15,27 @@
  * along with Gradoop. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.gradoop.flink.algorithms.fsm.xmd.comparison;
+package org.gradoop.flink.algorithms.fsm.common.comparison;
 
 import org.gradoop.flink.model.impl.tuples.WithCount;
 
 /**
- * Label comparator ignoring their frequency.
+ * Frequency-based label comparator where higher frequency is smaller.
  */
-public class AlphabeticalLabelComparator implements LabelComparator {
+public class InverseProportionalLabelComparator implements LabelComparator {
 
   @Override
   public int compare(WithCount<String> a, WithCount<String> b) {
-    return a.getObject().compareTo(b.getObject());
+    int comparison;
+
+    if (a.getCount() > b.getCount()) {
+      comparison = -1;
+    } else if (a.getCount() < b.getCount()) {
+      comparison = 1;
+    } else {
+      comparison = a.getObject().compareTo(b.getObject());
+    }
+
+    return comparison;
   }
 }

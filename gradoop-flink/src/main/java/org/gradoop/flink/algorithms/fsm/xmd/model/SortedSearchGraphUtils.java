@@ -17,9 +17,9 @@
 
 package org.gradoop.flink.algorithms.fsm.xmd.model;
 
-import org.gradoop.flink.algorithms.fsm.xmd.comparison.DFSBranchComparator;
-import org.gradoop.flink.algorithms.fsm.xmd.comparison.DirectedDFSBranchComparator;
-import org.gradoop.flink.algorithms.fsm.xmd.comparison.UndirectedDFSBranchComparator;
+import org.gradoop.flink.algorithms.fsm.common.comparison.DFSBranchComparator;
+import org.gradoop.flink.algorithms.fsm.common.comparison.DirectedDFSBranchComparator;
+import org.gradoop.flink.algorithms.fsm.common.comparison.UndirectedDFSBranchComparator;
 import org.gradoop.flink.algorithms.fsm.xmd.config.XMDConfig;
 
 /**

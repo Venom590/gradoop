@@ -18,10 +18,9 @@
 package org.gradoop.flink.algorithms.fsm.dimspan.model;
 
 import org.gradoop.flink.algorithms.fsm.common.config.FSMConfig;
-import org.gradoop.flink.algorithms.fsm.common.config.FSMConfigBase;
-import org.gradoop.flink.algorithms.fsm.dimspan.comparison.DFSBranchComparator;
-import org.gradoop.flink.algorithms.fsm.dimspan.comparison.DirectedDFSBranchComparator;
-import org.gradoop.flink.algorithms.fsm.dimspan.comparison.UndirectedDFSBranchComparator;
+import org.gradoop.flink.algorithms.fsm.common.comparison.DFSBranchComparator;
+import org.gradoop.flink.algorithms.fsm.common.comparison.DirectedDFSBranchComparator;
+import org.gradoop.flink.algorithms.fsm.common.comparison.UndirectedDFSBranchComparator;
 
 /**
  * Util methods to interpret and manipulate sorted int-array encoded graphs

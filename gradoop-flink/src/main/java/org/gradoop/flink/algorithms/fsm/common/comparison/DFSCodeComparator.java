@@ -15,9 +15,9 @@
  * along with Gradoop. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.gradoop.flink.algorithms.fsm.xmd.comparison;
+package org.gradoop.flink.algorithms.fsm.common.comparison;
 
-import org.gradoop.flink.algorithms.fsm.xmd.model.DFSCodeUtils;
+import org.gradoop.flink.algorithms.fsm.dimspan.model.DFSCodeUtils;
 
 import java.io.Serializable;
 import java.util.Comparator;

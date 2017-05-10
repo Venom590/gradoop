@@ -20,7 +20,7 @@ package org.gradoop.flink.algorithms.fsm.xmd.functions.preprocessing;
 import com.google.common.collect.Lists;
 import org.apache.flink.api.common.functions.GroupReduceFunction;
 import org.apache.flink.util.Collector;
-import org.gradoop.flink.algorithms.fsm.xmd.comparison.LabelComparator;
+import org.gradoop.flink.algorithms.fsm.common.comparison.LabelComparator;
 import org.gradoop.flink.model.impl.tuples.WithCount;
 
 import java.util.List;

@@ -15,19 +15,21 @@
  * along with Gradoop. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.gradoop.flink.algorithms.fsm.xmd.comparison;
+package org.gradoop.flink.algorithms.fsm.common.comparison;
 
-import org.gradoop.flink.algorithms.fsm.xmd.model.DFSCodeUtils;
+
+import org.gradoop.flink.algorithms.fsm.dimspan.model.DFSCodeUtils;
+import org.gradoop.flink.algorithms.fsm.dimspan.model.GraphUtilsBase;
 
 /**
  * Compare initial extensions of DFS codes in directed mode.
  */
-public class DirectedDFSBranchComparator implements DFSBranchComparator {
+public class UndirectedDFSBranchComparator implements DFSBranchComparator {
 
   /**
    * util methods to interpret int-array encoded patterns
    */
-  private DFSCodeUtils dfsCodeUtils = new DFSCodeUtils();
+  private GraphUtilsBase dfsCodeUtils = new DFSCodeUtils();
 
   @Override
   public int compare(int[] a, int[] b) {
@@ -36,21 +38,10 @@ public class DirectedDFSBranchComparator implements DFSBranchComparator {
     if (comparison == 0) {
       boolean aIsLoop = dfsCodeUtils.isLoop(a, 0);
       if (aIsLoop == dfsCodeUtils.isLoop(b, 0)) {
+        comparison = dfsCodeUtils.getEdgeLabel(a, 0) - dfsCodeUtils.getEdgeLabel(b, 0);
 
-        boolean aIsOutgoing = dfsCodeUtils.isOutgoing(a, 0);
-        if (aIsOutgoing == dfsCodeUtils.isOutgoing(b, 0)) {
-
-          comparison = dfsCodeUtils.getEdgeLabel(a, 0) - dfsCodeUtils.getEdgeLabel(b, 0);
-
-          if (comparison == 0) {
-            comparison = dfsCodeUtils.getToLabel(a, 0) - dfsCodeUtils.getToLabel(b, 0);
-          }
-        } else {
-          if (aIsOutgoing) {
-            comparison = -1;
-          } else {
-            comparison = 1;
-          }
+        if (comparison == 0) {
+          comparison = dfsCodeUtils.getToLabel(a, 0) - dfsCodeUtils.getToLabel(b, 0);
         }
       } else {
         if (aIsLoop) {

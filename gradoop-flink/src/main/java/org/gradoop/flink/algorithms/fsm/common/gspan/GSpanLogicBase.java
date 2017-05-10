@@ -19,7 +19,7 @@ package org.gradoop.flink.algorithms.fsm.common.gspan;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.gradoop.flink.algorithms.fsm.common.config.FSMConfig;
-import org.gradoop.flink.algorithms.fsm.dimspan.comparison.DFSCodeComparator;
+import org.gradoop.flink.algorithms.fsm.common.comparison.DFSCodeComparator;
 import org.gradoop.flink.algorithms.fsm.dimspan.model.DFSCodeUtils;
 import org.gradoop.flink.algorithms.fsm.dimspan.model.SearchGraphUtils;
 import org.gradoop.flink.algorithms.fsm.dimspan.model.SortedSearchGraphUtils;

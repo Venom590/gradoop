@@ -20,7 +20,7 @@ package org.gradoop.flink.algorithms.fsm.dimspan.functions.mining;
 import com.google.common.collect.Lists;
 import org.apache.flink.api.common.functions.RichMapFunction;
 import org.apache.flink.configuration.Configuration;
-import org.gradoop.flink.algorithms.fsm.dimspan.comparison.DFSCodeComparator;
+import org.gradoop.flink.algorithms.fsm.common.comparison.DFSCodeComparator;
 import org.gradoop.flink.algorithms.fsm.dimspan.config.DIMSpanConfig;
 import org.gradoop.flink.algorithms.fsm.common.config.FSMConstants;
 import org.gradoop.flink.algorithms.fsm.common.config.DataflowStep;
