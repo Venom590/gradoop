@@ -29,8 +29,8 @@ import org.gradoop.flink.algorithms.fsm.xmd.config.XMDConfig;
 import org.gradoop.flink.algorithms.fsm.xmd.model.GraphUtils;
 import org.gradoop.flink.algorithms.fsm.xmd.model.SearchGraphUtils;
 import org.gradoop.flink.algorithms.fsm.xmd.model.UnsortedSearchGraphUtils;
-import org.gradoop.flink.algorithms.fsm.xmd.tuples.EncodedMDGraph;
-import org.gradoop.flink.algorithms.fsm.xmd.tuples.MultidimensionalGraph;
+import org.gradoop.flink.algorithms.fsm.xmd.tuples.EncodedMultilevelGraph;
+import org.gradoop.flink.algorithms.fsm.xmd.tuples.MultilevelGraph;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -39,7 +39,7 @@ import java.util.Map;
  * Encodes edge labels to integers.
  * Drops edges with infrequent labels and isolated vertices.
  */
-public class Encode extends RichMapFunction<MultidimensionalGraph, EncodedMDGraph> {
+public class Encode extends RichMapFunction<MultilevelGraph, EncodedMultilevelGraph> {
 
   /**
    * label dictionary
@@ -87,58 +87,50 @@ public class Encode extends RichMapFunction<MultidimensionalGraph, EncodedMDGrap
   }
 
   @Override
-  public EncodedMDGraph map(MultidimensionalGraph inGraph) throws Exception {
+  public EncodedMultilevelGraph map(MultilevelGraph inGraph) throws Exception {
 
     // VERTICES
 
-    String[][][] vertexData = inGraph.getVertexData();
+    String[][] stringVertexLabels = inGraph.getVertexLabels();
 
-    int[] vertexIdMap = new int[vertexData.length];
-
-    int[] vertexLabels = new int[0];
-
-    int[][] dimensions = new int[0][];
+    int[] vertexIdMap = new int[stringVertexLabels.length];
+    int[] vertexTopLevels = new int[0];
+    int[][] vertexLowerLevels = new int[0][];
 
     int oldId = 0;
     int newId = 0;
-    for (String[][] data : vertexData) {
+    for (String[] stringVertexLabel : stringVertexLabels) {
 
-      String stringLabel = data[0][0];
-      Integer intLabel = dictionary.get(stringLabel);
+      String stringTopLevel = stringVertexLabel[0];
+      Integer intTopLevel = dictionary.get(stringTopLevel);
 
-      if (intLabel != null) {
-        // vertex has frequent label
+      if (intTopLevel != null) {
+        // vertex has frequent top level
 
-        for (int i = 1; i < data.length; i++) {
-          String[] stringDimension = data[i];
-          int[] intDimension = new int[] {newId};
+        int depth = stringVertexLabel.length;
+        int[] intLevels = new int[0];
 
-          for (String stringValue : stringDimension) {
-            Integer intValue = dictionary.get(stringValue);
+        for (int i = 1; i < depth; i++) {
+          String stringLevel = stringVertexLabel[i];
+          Integer intLevel = dictionary.get(stringLevel);
 
-            if (intValue != null) {
-              // dimension (0) or value (>0) is frequent
-
-              ArrayUtils.add(intDimension, intValue);
-            } else {
-              // children of infrequent values cannot be frequent anymore
-              break;
-            }
-          }
-
-          if (intDimension.length > 1) {
-            ArrayUtils.add(dimensions, intDimension);
+          if (intLevel != null) {
+            ArrayUtils.add(intLevels, intLevel);
+          } else {
+            break;
           }
         }
+
         vertexIdMap[oldId] = newId;
-        ArrayUtils.add(vertexLabels, intLabel);
+        ArrayUtils.add(vertexTopLevels, intTopLevel);
+        ArrayUtils.add(vertexLowerLevels, intLevels);
 
         newId++;
       }
       oldId++;
     }
 
-    Arrays.sort(dimensions);
+    Arrays.sort(vertexLowerLevels);
 
     // EDGES
 
@@ -154,13 +146,13 @@ public class Encode extends RichMapFunction<MultidimensionalGraph, EncodedMDGrap
 
         int[] edge = inGraph.getEdges()[edgeId];
         int sourceId = vertexIdMap[edge[0]];
-        int sourceLabel = vertexLabels[sourceId];
+        int sourceLabel = vertexTopLevels[sourceId];
 
         if (sourceId >= 0) {
           // source vertex has frequent label
 
           int targetId = vertexIdMap[edge[1]];
-          int targetLabel = vertexLabels[targetId];
+          int targetLabel = vertexTopLevels[targetId];
 
           if (targetId >= 0) {
             int[] dfsCode = sourceLabel <= targetLabel ?
@@ -189,6 +181,6 @@ public class Encode extends RichMapFunction<MultidimensionalGraph, EncodedMDGrap
       i++;
     }
 
-    return new EncodedMDGraph(outGraph, dimensions);
+    return new EncodedMultilevelGraph(outGraph, vertexLowerLevels);
   }
 }

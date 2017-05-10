@@ -28,13 +28,16 @@ import org.apache.flink.api.java.tuple.Tuple3;
  *
  * vertexData : [[vertexLabel],[dim1,val0,val1,val2],[dim2,val0,val1,val2],..]
  */
-public class MultidimensionalGraph extends Tuple3<String[][][], String[], int[][]> {
+public class MultilevelGraph extends Tuple3<String[][], String[], int[][]> {
 
-  public MultidimensionalGraph(String[][][] vertexData, String[] edgeLabels, int[][] edges) {
+  public MultilevelGraph() {
+  }
+
+  public MultilevelGraph(String[][] vertexData, String[] edgeLabels, int[][] edges) {
     super(vertexData, edgeLabels, edges);
   }
 
-  public String[][][] getVertexData() {
+  public String[][] getVertexLabels() {
     return this.f0;
   }
 

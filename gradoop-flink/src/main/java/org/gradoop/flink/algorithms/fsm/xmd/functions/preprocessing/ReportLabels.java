@@ -20,7 +20,7 @@ package org.gradoop.flink.algorithms.fsm.xmd.functions.preprocessing;
 import com.google.common.collect.Sets;
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.util.Collector;
-import org.gradoop.flink.algorithms.fsm.xmd.tuples.MultidimensionalGraph;
+import org.gradoop.flink.algorithms.fsm.xmd.tuples.MultilevelGraph;
 import org.gradoop.flink.model.impl.tuples.WithCount;
 
 import java.util.Set;
@@ -29,7 +29,7 @@ import java.util.Set;
  * graph -> (vertexLabel,1L),..
  */
 public class ReportLabels
-  implements FlatMapFunction<MultidimensionalGraph, WithCount<String>> {
+  implements FlatMapFunction<MultilevelGraph, WithCount<String>> {
 
   /**
    * reuse tuple to avoid instantiations
@@ -38,17 +38,15 @@ public class ReportLabels
 
   @Override
   public void flatMap(
-    MultidimensionalGraph graph, Collector<WithCount<String>> out) throws Exception {
+    MultilevelGraph graph, Collector<WithCount<String>> out) throws Exception {
 
-    String[][][] vertexData = graph.getVertexData();
+    String[][] vertexLabels = graph.getVertexLabels();
 
     Set<String> values = Sets.newHashSet();
 
-    for (String[][] labelAndDimensions : vertexData) {
-      for (String[] labelOrDimension : labelAndDimensions) {
-        for (String value : labelOrDimension) {
-          values.add(value);
-        }
+    for (String[] vertexLabel : vertexLabels) {
+      for (String level : vertexLabel) {
+        values.add(level);
       }
     }
 

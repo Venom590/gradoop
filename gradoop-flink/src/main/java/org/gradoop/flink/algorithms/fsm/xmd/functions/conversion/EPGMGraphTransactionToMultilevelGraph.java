@@ -24,7 +24,7 @@ import org.gradoop.common.model.impl.pojo.Edge;
 import org.gradoop.common.model.impl.pojo.Vertex;
 import org.gradoop.common.model.impl.properties.Property;
 import org.gradoop.flink.algorithms.fsm.xmd.config.XMDConfig;
-import org.gradoop.flink.algorithms.fsm.xmd.tuples.MultidimensionalGraph;
+import org.gradoop.flink.algorithms.fsm.xmd.tuples.MultilevelGraph;
 import org.gradoop.flink.representation.transactional.GraphTransaction;
 
 import java.util.Map;
@@ -32,43 +32,24 @@ import java.util.Map;
 /**
  * Gradoop Graph Transaction => lightweight labeled graph
  */
-public class EPGMGraphTransactionToMultidimensionalGraph implements
-  MapFunction<GraphTransaction, MultidimensionalGraph> {
+public class EPGMGraphTransactionToMultilevelGraph implements
+  MapFunction<GraphTransaction, MultilevelGraph> {
 
-  private final String dimKeyPrefix;
   private final String dimValueSeparator;
 
-  public EPGMGraphTransactionToMultidimensionalGraph(XMDConfig config) {
-    dimKeyPrefix = config.getDimensionKeyPrefix();
+  public EPGMGraphTransactionToMultilevelGraph(XMDConfig config) {
     dimValueSeparator = config.getDimensionValueSeparator();
   }
 
   @Override
-  public MultidimensionalGraph map(GraphTransaction transaction) throws Exception {
-
+  public MultilevelGraph map(GraphTransaction transaction) throws Exception {
     int vertexCount = transaction.getVertices().size();
     Map<GradoopId, Integer> vertexIdMap = Maps.newHashMapWithExpectedSize(vertexCount);
-    String[][][] vertexData = new String[vertexCount][][];
+    String[][] vertexLabels = new String[vertexCount][];
 
     int vertexId = 0;
     for (Vertex vertex : transaction.getVertices()) {
-
-      String[][] data = new String[][] {new String[] {vertex.getLabel()}};
-
-      for (Property property : vertex.getProperties()) {
-        String key = property.getKey();
-
-        if (key.startsWith(dimKeyPrefix)) {
-          String[] values = property.getValue().getString().split(dimValueSeparator);
-          String[] dimension = new String[values.length + 1];
-          dimension[0] = key;
-
-          System.arraycopy(values, 0, dimension, 1, dimension.length - 1);
-
-          vertexData[vertexId] = data;
-        }
-      }
-
+      vertexLabels[vertexId] = vertex.getLabel().split(dimValueSeparator);
       vertexIdMap.put(vertex.getId(), vertexId);
       vertexId++;
     }
@@ -89,6 +70,6 @@ public class EPGMGraphTransactionToMultidimensionalGraph implements
       edgeId++;
     }
 
-    return new MultidimensionalGraph(vertexData, edgeLabels, edges);
+    return new MultilevelGraph(vertexLabels, edgeLabels, edges);
   }
 }

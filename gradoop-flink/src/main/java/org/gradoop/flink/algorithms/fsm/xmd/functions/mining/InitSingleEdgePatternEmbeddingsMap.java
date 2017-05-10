@@ -21,7 +21,7 @@ import org.apache.flink.api.common.functions.MapFunction;
 import org.gradoop.flink.algorithms.fsm.common.gspan.GSpanLogic;
 import org.gradoop.flink.algorithms.fsm.common.tuples.PatternEmbeddingsMap;
 import org.gradoop.flink.algorithms.fsm.xmd.model.Simple16Compressor;
-import org.gradoop.flink.algorithms.fsm.xmd.tuples.EncodedMDGraph;
+import org.gradoop.flink.algorithms.fsm.xmd.tuples.EncodedMultilevelGraph;
 import org.gradoop.flink.algorithms.fsm.xmd.tuples.MDGraphWithPatternEmbeddingsMap;
 
 
@@ -29,7 +29,7 @@ import org.gradoop.flink.algorithms.fsm.xmd.tuples.MDGraphWithPatternEmbeddingsM
  * graph => (graph, 1-edge pattern -> embeddings)
  */
 public class InitSingleEdgePatternEmbeddingsMap
-  implements MapFunction<EncodedMDGraph, MDGraphWithPatternEmbeddingsMap> {
+  implements MapFunction<EncodedMultilevelGraph, MDGraphWithPatternEmbeddingsMap> {
 
   /**
    * pattern generation logic
@@ -46,7 +46,7 @@ public class InitSingleEdgePatternEmbeddingsMap
   }
 
   @Override
-  public MDGraphWithPatternEmbeddingsMap map(EncodedMDGraph graph) throws Exception {
+  public MDGraphWithPatternEmbeddingsMap map(EncodedMultilevelGraph graph) throws Exception {
     PatternEmbeddingsMap map = gSpan.getSingleEdgePatternEmbeddings(graph.getGraph());
 
     Simple16Compressor.compressPatterns(map);

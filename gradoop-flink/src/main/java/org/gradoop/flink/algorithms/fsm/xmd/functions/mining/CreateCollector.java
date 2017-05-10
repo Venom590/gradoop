@@ -19,7 +19,7 @@ package org.gradoop.flink.algorithms.fsm.xmd.functions.mining;
 
 import org.apache.flink.api.common.functions.MapFunction;
 import org.gradoop.flink.algorithms.fsm.common.tuples.PatternEmbeddingsMap;
-import org.gradoop.flink.algorithms.fsm.xmd.tuples.EncodedMDGraph;
+import org.gradoop.flink.algorithms.fsm.xmd.tuples.EncodedMultilevelGraph;
 import org.gradoop.flink.algorithms.fsm.xmd.tuples.MDGraphWithPatternEmbeddingsMap;
 
 /**
@@ -33,6 +33,6 @@ public class CreateCollector implements MapFunction<Boolean, MDGraphWithPatternE
   public MDGraphWithPatternEmbeddingsMap map(Boolean aBoolean) throws Exception {
 
     return new MDGraphWithPatternEmbeddingsMap(
-      new EncodedMDGraph(), PatternEmbeddingsMap.getEmptyOne());
+      EncodedMultilevelGraph.getEmptyOne(), PatternEmbeddingsMap.getEmptyOne());
   }
 }
