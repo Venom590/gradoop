@@ -19,6 +19,7 @@ package org.gradoop.flink.algorithms.fsm;
 
 import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.operators.IterativeDataSet;
+import org.apache.flink.api.java.tuple.Tuple3;
 import org.gradoop.flink.algorithms.fsm.common.config.FSMConstants;
 import org.gradoop.flink.algorithms.fsm.common.config.DictionaryType;
 import org.gradoop.flink.algorithms.fsm.common.comparison.AlphabeticalLabelComparator;
@@ -49,9 +50,14 @@ import org.gradoop.flink.algorithms.fsm.cross_level.tuples.MDGraphWithPatternEmb
 import org.gradoop.flink.model.api.operators.UnaryCollectionToCollectionOperator;
 import org.gradoop.flink.model.impl.GraphCollection;
 import org.gradoop.flink.model.impl.GraphTransactions;
+import org.gradoop.flink.model.impl.functions.tuple.Value0Of3;
+import org.gradoop.flink.model.impl.functions.tuple.Value1Of3;
+import org.gradoop.flink.model.impl.functions.tuple.Value2Of3;
 import org.gradoop.flink.model.impl.operators.count.Count;
 import org.gradoop.flink.model.impl.tuples.WithCount;
 import org.gradoop.flink.representation.transactional.GraphTransaction;
+import org.gradoop.flink.util.ExpandArray;
+import org.gradoop.flink.util.MakeCountable;
 
 /**
  * Gradoop operator wrapping the DIMSpan algorithm for transactional frequent subgraph mining.
@@ -87,7 +93,17 @@ public class CrossLevelTFSM implements UnaryCollectionToCollectionOperator {
   /**
    * Vertex label dictionary for dictionary coding.
    */
-  private DataSet<String[]> labelDictionary;
+  private DataSet<String[]> vertexLabelDictionary;
+
+  /**
+   * Vertex label dictionary for dictionary coding.
+   */
+  private DataSet<String[]> edgeLabelDictionary;
+
+  /**
+   * Vertex label dictionary for dictionary coding.
+   */
+  private DataSet<String[]> levelDictionary;
 
   /**
    * Label comparator used for dictionary coding.
@@ -180,7 +196,9 @@ public class CrossLevelTFSM implements UnaryCollectionToCollectionOperator {
     // Execute edge label pruning and dictionary coding
     DataSet<EncodedMultilevelGraph> encodedGraphs = graphs
       .map(new Encode(fsmConfig))
-      .withBroadcastSet(labelDictionary, FSMConstants.LABEL_DICTIONARY);
+      .withBroadcastSet(vertexLabelDictionary, FSMConstants.VERTEX_DICTIONARY)
+      .withBroadcastSet(edgeLabelDictionary, FSMConstants.EDGE_DICTIONARY)
+      .withBroadcastSet(levelDictionary, FSMConstants.LEVEL_DICTIONARY);
 
     // return all non-obsolete encoded graphs
     return encodedGraphs
@@ -242,7 +260,8 @@ public class CrossLevelTFSM implements UnaryCollectionToCollectionOperator {
   private DataSet<GraphTransaction> postProcess(DataSet<WithCount<int[]>> encodedOutput) {
     return encodedOutput
       .map(new DFSCodeToEPGMGraphTransaction())
-      .withBroadcastSet(labelDictionary, FSMConstants.LABEL_DICTIONARY)
+      .withBroadcastSet(vertexLabelDictionary, FSMConstants.VERTEX_DICTIONARY)
+      .withBroadcastSet(edgeLabelDictionary, FSMConstants.EDGE_DICTIONARY)
       .withBroadcastSet(graphCount, FSMConstants.GRAPH_COUNT);
   }
 
@@ -256,10 +275,33 @@ public class CrossLevelTFSM implements UnaryCollectionToCollectionOperator {
 
     // LABEL PRUNING
 
-    DataSet<WithCount<String>> labels = graphs
-      .flatMap(new ReportLabels());
+    DataSet<Tuple3<String[], String[], String[]>> labels = graphs
+      .map(new ReportLabels());
 
-    labelDictionary = getFrequentLabels(labels)
+    DataSet<WithCount<String>> vertexLabels = labels
+      .map(new Value0Of3<>())
+      .flatMap(new ExpandArray<>())
+      .map(new MakeCountable<>());
+
+    vertexLabelDictionary = getFrequentLabels(vertexLabels)
+      .reduceGroup(new CreateDictionary(comparator));
+
+    DataSet<WithCount<String>> edgeLabels = labels
+      .map(new Value1Of3<>())
+      .flatMap(new ExpandArray<>())
+      .map(new MakeCountable<>());
+
+    edgeLabelDictionary = getFrequentLabels(edgeLabels)
+      .reduceGroup(new CreateDictionary(comparator));
+
+    DataSet<WithCount<String>> levelValues = labels
+      .map(new Value2Of3<>())
+      .flatMap(new ExpandArray<>())
+      .map(new MakeCountable<>());
+
+    levelDictionary = levelValues
+      .groupBy(0)
+      .sum(1)
       .reduceGroup(new CreateDictionary(comparator));
   }
 

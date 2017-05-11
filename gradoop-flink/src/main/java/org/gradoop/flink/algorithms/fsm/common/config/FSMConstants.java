@@ -43,11 +43,6 @@ public class FSMConstants {
   public static final String EDGE_DICTIONARY = "eld";
 
   /**
-   * Generic label Dictionary
-   */
-  public static final String LABEL_DICTIONARY = "d";
-
-  /**
    * set of frequent patterns
    */
   public static final String FREQUENT_PATTERNS = "fp";
@@ -66,5 +61,7 @@ public class FSMConstants {
    * Property key to store the canonical label.
    */
   public static final String CANONICAL_LABEL_KEY = "minDFS";
-  public static final String DIMENSION_SEPARATOR = ".";
+  public static final String LEVEL_PREFIX = "_dl_";
+
+  public static final String  LEVEL_DICTIONARY  = "lld";
 }

@@ -24,6 +24,7 @@ import org.apache.flink.configuration.Configuration;
 import org.gradoop.common.model.impl.id.GradoopId;
 import org.gradoop.common.model.impl.pojo.Edge;
 import org.gradoop.common.model.impl.pojo.Vertex;
+import org.gradoop.common.model.impl.properties.Property;
 import org.gradoop.flink.algorithms.fsm.common.comparison.DFSBranchComparator;
 import org.gradoop.flink.algorithms.fsm.common.comparison.DirectedDFSBranchComparator;
 import org.gradoop.flink.algorithms.fsm.common.comparison.UndirectedDFSBranchComparator;
@@ -36,6 +37,7 @@ import org.gradoop.flink.algorithms.fsm.cross_level.tuples.EncodedMultilevelGrap
 import org.gradoop.flink.representation.transactional.GraphTransaction;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -45,9 +47,19 @@ import java.util.Map;
 public class Encode extends RichMapFunction<GraphTransaction, EncodedMultilevelGraph> {
 
   /**
-   * label dictionary
+   * vertex label dictionary
    */
-  private Map<String, Integer> dictionary = Maps.newHashMap();
+  private Map<String, Integer> vertexDictionary = Maps.newHashMap();
+
+  /**
+   * vertex label dictionary
+   */
+  private Map<String, Integer> edgeDictionary = Maps.newHashMap();
+
+  /**
+   * vertex label dictionary
+   */
+  private Map<String, Integer> levelDictionary = Maps.newHashMap();
 
   /**
    * flag to enable graph sorting (true=enabled)
@@ -63,6 +75,8 @@ public class Encode extends RichMapFunction<GraphTransaction, EncodedMultilevelG
    * util methods to interpret and manipulate int-array encoded graphs
    */
   private final SearchGraphUtils graphUtils = new UnsortedSearchGraphUtils();
+
+  private final Map<Integer, Integer> labelDepth = Maps.newHashMap();
 
   /**
    * Constructor
@@ -81,11 +95,31 @@ public class Encode extends RichMapFunction<GraphTransaction, EncodedMultilevelG
     super.open(parameters);
 
     // create inverse dictionary at broadcast reception
-    String[] broadcast = getRuntimeContext()
-      .<String[]>getBroadcastVariable(FSMConstants.LABEL_DICTIONARY).get(0);
+    String[] array = getRuntimeContext()
+      .<String[]>getBroadcastVariable(FSMConstants.VERTEX_DICTIONARY).get(0);
 
-    for (int i = 0; i < broadcast.length; i++) {
-      dictionary.put(broadcast[i], i);
+    for (int i = 0; i < array.length; i++) {
+      vertexDictionary.put(array[i], i);
+    }
+
+    // create inverse dictionary at broadcast reception
+    array = getRuntimeContext()
+      .<String[]>getBroadcastVariable(FSMConstants.EDGE_DICTIONARY).get(0);
+
+    for (int i = 0; i < array.length; i++) {
+      edgeDictionary.put(array[i], i);
+    }
+
+    // create inverse dictionary at broadcast reception
+    List<String[]> levelBroadcast =
+      getRuntimeContext().getBroadcastVariable(FSMConstants.LEVEL_DICTIONARY);
+
+    if (levelBroadcast.size() > 0) {
+      array = levelBroadcast.get(0);
+
+      for (int i = 0; i < array.length; i++) {
+        levelDictionary.put(array[i], i);
+      }
     }
   }
 
@@ -95,39 +129,47 @@ public class Encode extends RichMapFunction<GraphTransaction, EncodedMultilevelG
     // VERTICES
 
     Map<GradoopId, Integer> vertexIdMap = Maps.newHashMap();
-    int[] vertexTopLevels = new int[0];
-    int[][] vertexLowerLevels = new int[0][];
+    int[] vertexLabels = new int[0];
+    int[][] vertexLevels = new int[0][];
 
     int id = 0;
     for (Vertex vertex : inGraph.getVertices()) {
+      Integer label = vertexDictionary.get(vertex.getLabel());
 
-      String label = vertex.getLabel();
-      String[] stringLevels = label.contains(FSMConstants.DIMENSION_SEPARATOR) ?
-        label.split(FSMConstants.DIMENSION_SEPARATOR) :
-        new String[] {label};
-
-      Integer intTopLevel = dictionary.get(stringLevels[0]);
-
-      if (intTopLevel != null) {
+      if (label != null) {
         // vertex has frequent top level
 
-        int depth = stringLevels.length;
-        int[] intLevels = new int[0];
+        Integer depth = labelDepth.get(label);
 
-        for (int i = 1; i < depth; i++) {
-          String stringLevel = stringLevels[i];
-          Integer intLevel = dictionary.get(stringLevel);
+        if (depth == null) {
+          depth = 0;
 
-          if (intLevel != null) {
-            ArrayUtils.add(intLevels, intLevel);
-          } else {
-            break;
+          for (Property property : vertex.getProperties()) {
+            if (property.getKey().startsWith(FSMConstants.LEVEL_PREFIX)) {
+              depth++;
+            }
+          }
+
+          labelDepth.put(label, depth);
+        }
+
+        int[] levels = new int[depth];
+
+        if (depth > 0) {
+          for (Property property : vertex.getProperties()) {
+            String key = property.getKey();
+
+            if (key.startsWith(FSMConstants.LEVEL_PREFIX)) {
+              int level = Integer.valueOf(key.substring(FSMConstants.LEVEL_PREFIX.length()));
+
+              levels[level] = levelDictionary.get(property.getValue().toString());
+            }
           }
         }
 
         vertexIdMap.put(vertex.getId(), id);
-        vertexTopLevels = ArrayUtils.add(vertexTopLevels, intTopLevel);
-        vertexLowerLevels = ArrayUtils.add(vertexLowerLevels, intLevels);
+        vertexLabels = ArrayUtils.add(vertexLabels, label);
+        vertexLevels = ArrayUtils.add(vertexLevels, levels);
 
         id++;
       }
@@ -138,7 +180,7 @@ public class Encode extends RichMapFunction<GraphTransaction, EncodedMultilevelG
     int[][] dfsCodes = new int[0][];
 
     for (Edge edge : inGraph.getEdges()) {
-      Integer edgeLabel = dictionary.get(edge.getLabel());
+      Integer edgeLabel = edgeDictionary.get(edge.getLabel());
 
       if (edgeLabel != null) {
         // edge has frequent label
@@ -146,7 +188,7 @@ public class Encode extends RichMapFunction<GraphTransaction, EncodedMultilevelG
         Integer sourceId = vertexIdMap.get(edge.getSourceId());
 
         if (sourceId != null) {
-          int sourceLabel = vertexTopLevels[sourceId];
+          int sourceLabel = vertexLabels[sourceId];
 
           if (sourceId >= 0) {
             // source vertex has frequent label
@@ -154,7 +196,7 @@ public class Encode extends RichMapFunction<GraphTransaction, EncodedMultilevelG
             Integer targetId = vertexIdMap.get(edge.getTargetId());
 
             if (targetId != null) {
-              int targetLabel = vertexTopLevels[targetId];
+              int targetLabel = vertexLabels[targetId];
 
               if (targetId >= 0) {
                 int[] dfsCode = sourceLabel <= targetLabel ?
@@ -185,6 +227,6 @@ public class Encode extends RichMapFunction<GraphTransaction, EncodedMultilevelG
       i++;
     }
 
-    return new EncodedMultilevelGraph(outGraph, vertexLowerLevels);
+    return new EncodedMultilevelGraph(outGraph, vertexLevels);
   }
 }

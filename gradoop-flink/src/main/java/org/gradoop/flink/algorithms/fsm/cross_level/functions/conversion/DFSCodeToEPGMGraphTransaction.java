@@ -66,9 +66,10 @@ public class DFSCodeToEPGMGraphTransaction
     super.open(parameters);
 
     vertexDictionary = getRuntimeContext()
-      .<String[]>getBroadcastVariable(FSMConstants.LABEL_DICTIONARY).get(0);
+      .<String[]>getBroadcastVariable(FSMConstants.VERTEX_DICTIONARY).get(0);
 
-    edgeDictionary = vertexDictionary;
+    edgeDictionary = getRuntimeContext()
+      .<String[]>getBroadcastVariable(FSMConstants.EDGE_DICTIONARY).get(0);
 
     graphCount = getRuntimeContext()
       .<Long>getBroadcastVariable(FSMConstants.GRAPH_COUNT).get(0);

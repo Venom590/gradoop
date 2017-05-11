@@ -18,12 +18,12 @@
 package org.gradoop.flink.algorithms.fsm.cross_level.functions.preprocessing;
 
 import com.google.common.collect.Sets;
-import org.apache.flink.api.common.functions.FlatMapFunction;
-import org.apache.flink.util.Collector;
+import org.apache.flink.api.common.functions.MapFunction;
+import org.apache.flink.api.java.tuple.Tuple3;
 import org.gradoop.common.model.impl.pojo.Edge;
 import org.gradoop.common.model.impl.pojo.Vertex;
+import org.gradoop.common.model.impl.properties.Property;
 import org.gradoop.flink.algorithms.fsm.common.config.FSMConstants;
-import org.gradoop.flink.model.impl.tuples.WithCount;
 import org.gradoop.flink.representation.transactional.GraphTransaction;
 
 import java.util.Set;
@@ -32,39 +32,45 @@ import java.util.Set;
  * graph -> (vertexLabel,1L),..
  */
 public class ReportLabels
-  implements FlatMapFunction<GraphTransaction, WithCount<String>> {
+  implements MapFunction<GraphTransaction, Tuple3<String[], String[], String[]>> {
 
   /**
    * reuse tuple to avoid instantiations
    */
-  private WithCount<String> reuseTuple = new WithCount<>(null, 1);
+  private final Tuple3<String[], String[], String[]> reuseTuple = new Tuple3<>();
+
+  private final Set<String> vertexLabels = Sets.newHashSet();
+  private final Set<String> edgeLabels = Sets.newHashSet();
+  private final Set<String> levelValues = Sets.newHashSet();
 
   @Override
-  public void flatMap(
-    GraphTransaction graph, Collector<WithCount<String>> out) throws Exception {
+  public Tuple3<String[], String[], String[]> map(GraphTransaction graph) throws Exception {
 
-    Set<String> labels = Sets.newHashSet();
+    vertexLabels.clear();
+    edgeLabels.clear();
+    levelValues.clear();
 
     for (Vertex vertex : graph.getVertices()) {
-      String label = vertex.getLabel();
-      String[] levels = label.split(FSMConstants.DIMENSION_SEPARATOR);
+      vertexLabels.add(vertex.getLabel());
 
-      if (levels.length > 0) {
-        for (String level : levels) {
-          labels.add(level);
+      for (Property property : vertex.getProperties()) {
+        if (property.getKey().startsWith(FSMConstants.LEVEL_PREFIX)) {
+          levelValues.add(property.getValue().getString());
         }
-      } {
-        labels.add(label);
       }
     }
 
     for (Edge edge : graph.getEdges()) {
-      labels.add(edge.getLabel());
+      edgeLabels.add(edge.getLabel());
     }
 
-    for (String label : labels) {
-      reuseTuple.setObject(label);
-      out.collect(reuseTuple);
-    }
+    reuseTuple.f0 = vertexLabels.toArray(new String[vertexLabels.size()]);
+    reuseTuple.f1 = edgeLabels.toArray(new String[edgeLabels.size()]);
+    reuseTuple.f2 = levelValues.toArray(new String[levelValues.size()]);
+
+    System.out.println(reuseTuple);
+
+    return reuseTuple;
   }
+
 }
