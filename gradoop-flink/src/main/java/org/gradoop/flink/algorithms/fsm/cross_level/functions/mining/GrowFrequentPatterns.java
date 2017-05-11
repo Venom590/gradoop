@@ -25,16 +25,18 @@ import org.gradoop.flink.algorithms.fsm.common.tuples.PatternEmbeddingsMap;
 import org.gradoop.flink.algorithms.fsm.common.comparison.DFSCodeComparator;
 import org.gradoop.flink.algorithms.fsm.common.gspan.GSpanLogic;
 import org.gradoop.flink.algorithms.fsm.cross_level.model.Simple16Compressor;
-import org.gradoop.flink.algorithms.fsm.cross_level.tuples.MDGraphWithPatternEmbeddingsMap;
+import org.gradoop.flink.algorithms.fsm.cross_level.tuples.MultilevelGraphWithPatternEmbeddingsMap;
+import org.gradoop.flink.algorithms.fsm.cross_level.tuples.PatternVectors;
 import org.gradoop.flink.model.impl.tuples.WithCount;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
  * (graph, k-edge pattern -> embeddings) => (graph, k+1-edge pattern -> embeddings)
  */
 public class GrowFrequentPatterns
-  extends RichMapFunction<MDGraphWithPatternEmbeddingsMap, MDGraphWithPatternEmbeddingsMap> {
+  extends RichMapFunction<MultilevelGraphWithPatternEmbeddingsMap, MultilevelGraphWithPatternEmbeddingsMap> {
 
   /**
    * compressed k-edge frequent patterns for fast embedding map lookup
@@ -47,11 +49,6 @@ public class GrowFrequentPatterns
   private List<int[]> frequentPatterns;
 
   /**
-   * patterns with frequency for collector
-   */
-  private List<WithCount<int[]>> patternFrequencies;
-
-  /**
    * list of rightmost paths, index relates to frequent patterns
    */
   private List<int[]> rightmostPaths;
@@ -60,6 +57,7 @@ public class GrowFrequentPatterns
    * pattern growth logic (directed or undirected mode)
    */
   private final GSpanLogic gSpan;
+  private List<PatternVectors> patternVectorsList;
 
   /**
    * Constructor.
@@ -79,21 +77,17 @@ public class GrowFrequentPatterns
 
     // broadcast reception
 
-    patternFrequencies =
+    patternVectorsList =
       getRuntimeContext().getBroadcastVariable(FSMConstants.FREQUENT_PATTERNS);
 
-    int patternCount = patternFrequencies.size();
+    int patternCount = patternVectorsList.size();
 
-    this.frequentPatterns = Lists.newArrayListWithExpectedSize(patternCount);
+    frequentPatterns = Lists.newArrayListWithExpectedSize(patternCount);
 
-    for (WithCount<int[]> patternWithCount : patternFrequencies) {
-      int[] pattern = patternWithCount.getObject();
-
-      // uncompress
-      pattern = Simple16Compressor.uncompress(pattern);
-
-      frequentPatterns.add(pattern);
+    for (PatternVectors patternVectors : patternVectorsList) {
+      frequentPatterns.add(Simple16Compressor.uncompress(patternVectors.getPattern()));
     }
+
 
     // sort
     frequentPatterns.sort(new DFSCodeComparator());
@@ -104,18 +98,19 @@ public class GrowFrequentPatterns
 
     for (int[] pattern : frequentPatterns) {
       rightmostPaths.add(gSpan.getRightmostPathTimes(pattern));
-
-      // TODO: directly store compressed patterns at reception
       compressedFrequentPatterns.add(Simple16Compressor.compress(pattern));
     }
   }
 
   @Override
-  public MDGraphWithPatternEmbeddingsMap map(MDGraphWithPatternEmbeddingsMap pair) throws Exception {
+  public MultilevelGraphWithPatternEmbeddingsMap map(MultilevelGraphWithPatternEmbeddingsMap pair) throws Exception {
 
     // union k-1 edge frequent patterns with k-edge ones
     if (pair.isFrequentPatternCollector()) {
-      for (WithCount<int[]> patternWithFrequency : patternFrequencies) {
+      for (PatternVectors patternVectors : patternVectorsList) {
+        WithCount<int[]> patternWithFrequency =
+          new WithCount<>(patternVectors.getPattern(), patternVectors.getVectors().length);
+
         pair.getMap().collect(patternWithFrequency);
       }
     } else {
@@ -131,8 +126,6 @@ public class GrowFrequentPatterns
       // compress patterns and embedding, if configured
       // NOTE: graphs will remain compressed
       Simple16Compressor.compressPatterns(pair.getMap());
-
-
       Simple16Compressor.compressEmbeddings(pair.getMap());
     }
 

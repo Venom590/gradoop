@@ -19,20 +19,20 @@ package org.gradoop.flink.algorithms.fsm.cross_level.functions.mining;
 
 import org.apache.flink.api.common.functions.MapFunction;
 import org.gradoop.flink.algorithms.fsm.common.tuples.PatternEmbeddingsMap;
-import org.gradoop.flink.algorithms.fsm.cross_level.tuples.EncodedMultilevelGraph;
-import org.gradoop.flink.algorithms.fsm.cross_level.tuples.MDGraphWithPatternEmbeddingsMap;
+import org.gradoop.flink.algorithms.fsm.cross_level.tuples.MultilevelGraph;
+import org.gradoop.flink.algorithms.fsm.cross_level.tuples.MultilevelGraphWithPatternEmbeddingsMap;
 
 /**
  * bool => (graph, pattern -> embeddings)
  * workaround for bulk iteration intermediate results
  * graph and map are empty
  */
-public class CreateCollector implements MapFunction<Boolean, MDGraphWithPatternEmbeddingsMap> {
+public class CreateCollector implements MapFunction<Boolean, MultilevelGraphWithPatternEmbeddingsMap> {
 
   @Override
-  public MDGraphWithPatternEmbeddingsMap map(Boolean aBoolean) throws Exception {
+  public MultilevelGraphWithPatternEmbeddingsMap map(Boolean aBoolean) throws Exception {
 
-    return new MDGraphWithPatternEmbeddingsMap(
-      EncodedMultilevelGraph.getEmptyOne(), PatternEmbeddingsMap.getEmptyOne());
+    return new MultilevelGraphWithPatternEmbeddingsMap(
+      MultilevelGraph.getEmptyOne(), PatternEmbeddingsMap.getEmptyOne());
   }
 }

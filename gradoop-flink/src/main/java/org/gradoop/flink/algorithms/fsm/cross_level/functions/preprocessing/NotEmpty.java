@@ -20,12 +20,12 @@ package org.gradoop.flink.algorithms.fsm.cross_level.functions.preprocessing;
 import org.apache.flink.api.common.functions.FilterFunction;
 import org.gradoop.flink.algorithms.fsm.cross_level.model.GraphUtils;
 import org.gradoop.flink.algorithms.fsm.cross_level.model.GraphUtilsBase;
-import org.gradoop.flink.algorithms.fsm.cross_level.tuples.EncodedMultilevelGraph;
+import org.gradoop.flink.algorithms.fsm.cross_level.tuples.MultilevelGraph;
 
 /**
  * (V, E) => true, if E not empty
  */
-public class NotEmpty implements FilterFunction<EncodedMultilevelGraph> {
+public class NotEmpty implements FilterFunction<MultilevelGraph> {
 
   /**
    * util methods to interpret int-array encoded graphs
@@ -33,7 +33,7 @@ public class NotEmpty implements FilterFunction<EncodedMultilevelGraph> {
   private final GraphUtils graphUtils = new GraphUtilsBase();
 
   @Override
-  public boolean filter(EncodedMultilevelGraph graph) throws Exception {
+  public boolean filter(MultilevelGraph graph) throws Exception {
     return graphUtils.getEdgeCount(graph.getGraph()) > 0;
   }
 }

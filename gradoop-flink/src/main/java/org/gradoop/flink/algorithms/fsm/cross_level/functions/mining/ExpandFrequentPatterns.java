@@ -19,17 +19,17 @@ package org.gradoop.flink.algorithms.fsm.cross_level.functions.mining;
 
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.util.Collector;
-import org.gradoop.flink.algorithms.fsm.cross_level.tuples.MDGraphWithPatternEmbeddingsMap;
+import org.gradoop.flink.algorithms.fsm.cross_level.tuples.MultilevelGraphWithPatternEmbeddingsMap;
 import org.gradoop.flink.model.impl.tuples.WithCount;
 
 /**
  * (graph, pattern -> embedding) => pattern, ...
  */
 public class ExpandFrequentPatterns
-  implements FlatMapFunction<MDGraphWithPatternEmbeddingsMap, WithCount<int[]>> {
+  implements FlatMapFunction<MultilevelGraphWithPatternEmbeddingsMap, WithCount<int[]>> {
 
   @Override
-  public void flatMap(MDGraphWithPatternEmbeddingsMap graphWithPatternEmbeddingsMap,
+  public void flatMap(MultilevelGraphWithPatternEmbeddingsMap graphWithPatternEmbeddingsMap,
     Collector<WithCount<int[]>> collector) throws Exception {
 
     for (int i = 0; i < graphWithPatternEmbeddingsMap.getMap().getPatternCount(); i++) {

@@ -33,7 +33,7 @@ import org.gradoop.flink.algorithms.fsm.cross_level.config.CrossLevelTFSMConfig;
 import org.gradoop.flink.algorithms.fsm.cross_level.model.GraphUtils;
 import org.gradoop.flink.algorithms.fsm.cross_level.model.SearchGraphUtils;
 import org.gradoop.flink.algorithms.fsm.cross_level.model.UnsortedSearchGraphUtils;
-import org.gradoop.flink.algorithms.fsm.cross_level.tuples.EncodedMultilevelGraph;
+import org.gradoop.flink.algorithms.fsm.cross_level.tuples.MultilevelGraph;
 import org.gradoop.flink.representation.transactional.GraphTransaction;
 
 import java.util.Arrays;
@@ -44,7 +44,7 @@ import java.util.Map;
  * Encodes edge labels to integers.
  * Drops edges with infrequent labels and isolated vertices.
  */
-public class Encode extends RichMapFunction<GraphTransaction, EncodedMultilevelGraph> {
+public class Encode extends RichMapFunction<GraphTransaction, MultilevelGraph> {
 
   /**
    * vertex label dictionary
@@ -124,7 +124,7 @@ public class Encode extends RichMapFunction<GraphTransaction, EncodedMultilevelG
   }
 
   @Override
-  public EncodedMultilevelGraph map(GraphTransaction inGraph) throws Exception {
+  public MultilevelGraph map(GraphTransaction inGraph) throws Exception {
 
     // VERTICES
 
@@ -227,6 +227,6 @@ public class Encode extends RichMapFunction<GraphTransaction, EncodedMultilevelG
       i++;
     }
 
-    return new EncodedMultilevelGraph(outGraph, vertexLevels);
+    return new MultilevelGraph(outGraph, vertexLevels);
   }
 }

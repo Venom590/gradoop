@@ -68,8 +68,6 @@ public class ReportLabels
     reuseTuple.f1 = edgeLabels.toArray(new String[edgeLabels.size()]);
     reuseTuple.f2 = levelValues.toArray(new String[levelValues.size()]);
 
-    System.out.println(reuseTuple);
-
     return reuseTuple;
   }
 

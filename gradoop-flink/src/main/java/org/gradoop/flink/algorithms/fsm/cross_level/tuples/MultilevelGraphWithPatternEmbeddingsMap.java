@@ -23,13 +23,13 @@ import org.gradoop.flink.algorithms.fsm.common.tuples.PatternEmbeddingsMap;
 /**
  * (graph, pattern->embeddings)
  */
-public class MDGraphWithPatternEmbeddingsMap
-  extends Tuple2<EncodedMultilevelGraph, PatternEmbeddingsMap> {
+public class MultilevelGraphWithPatternEmbeddingsMap
+  extends Tuple2<MultilevelGraph, PatternEmbeddingsMap> {
 
   /**
    * Default constructor.
    */
-  public MDGraphWithPatternEmbeddingsMap() {
+  public MultilevelGraphWithPatternEmbeddingsMap() {
   }
 
   /**
@@ -37,8 +37,8 @@ public class MDGraphWithPatternEmbeddingsMap
    *  @param graph graph
    * @param patternEmbeddings pattern->embeddings
    */
-  public MDGraphWithPatternEmbeddingsMap(
-    EncodedMultilevelGraph graph, PatternEmbeddingsMap patternEmbeddings) {
+  public MultilevelGraphWithPatternEmbeddingsMap(
+    MultilevelGraph graph, PatternEmbeddingsMap patternEmbeddings) {
     super(graph, patternEmbeddings);
   }
 
@@ -53,11 +53,11 @@ public class MDGraphWithPatternEmbeddingsMap
 
   // GETTERS AND SETTERS
 
-  public EncodedMultilevelGraph getGraph() {
+  public MultilevelGraph getGraph() {
     return f0;
   }
 
-  public void setGraph(EncodedMultilevelGraph graph) {
+  public void setGraph(MultilevelGraph graph) {
     this.f0 = graph;
   }
 

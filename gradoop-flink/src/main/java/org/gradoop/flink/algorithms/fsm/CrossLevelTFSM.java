@@ -18,6 +18,7 @@
 package org.gradoop.flink.algorithms.fsm;
 
 import org.apache.flink.api.java.DataSet;
+import org.apache.flink.api.java.operators.GroupReduceOperator;
 import org.apache.flink.api.java.operators.IterativeDataSet;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.gradoop.flink.algorithms.fsm.common.config.FSMConstants;
@@ -28,15 +29,8 @@ import org.gradoop.flink.algorithms.fsm.common.comparison.LabelComparator;
 import org.gradoop.flink.algorithms.fsm.common.comparison.ProportionalLabelComparator;
 import org.gradoop.flink.algorithms.fsm.cross_level.config.CrossLevelTFSMConfig;
 import org.gradoop.flink.algorithms.fsm.cross_level.functions.conversion.DFSCodeToEPGMGraphTransaction;
-import org.gradoop.flink.algorithms.fsm.cross_level.functions.mining.CreateCollector;
-import org.gradoop.flink.algorithms.fsm.cross_level.functions.mining.ExpandFrequentPatterns;
-import org.gradoop.flink.algorithms.fsm.cross_level.functions.mining.Frequent;
-import org.gradoop.flink.algorithms.fsm.cross_level.functions.mining.GrowFrequentPatterns;
-import org.gradoop.flink.algorithms.fsm.cross_level.functions.mining.InitSingleEdgePatternEmbeddingsMap;
-import org.gradoop.flink.algorithms.fsm.cross_level.functions.mining.IsFrequentPatternCollector;
-import org.gradoop.flink.algorithms.fsm.cross_level.functions.mining.NotObsolete;
-import org.gradoop.flink.algorithms.fsm.cross_level.functions.mining.ReportSupportedPatterns;
-import org.gradoop.flink.algorithms.fsm.cross_level.functions.mining.VerifyPattern;
+
+import org.gradoop.flink.algorithms.fsm.cross_level.functions.mining.*;
 import org.gradoop.flink.algorithms.fsm.cross_level.functions.preprocessing.CreateDictionary;
 import org.gradoop.flink.algorithms.fsm.cross_level.functions.preprocessing.Encode;
 import org.gradoop.flink.algorithms.fsm.cross_level.functions.preprocessing.MinFrequency;
@@ -45,8 +39,9 @@ import org.gradoop.flink.algorithms.fsm.cross_level.functions.preprocessing.Repo
 import org.gradoop.flink.algorithms.fsm.common.gspan.DirectedGSpanLogic;
 import org.gradoop.flink.algorithms.fsm.common.gspan.GSpanLogic;
 import org.gradoop.flink.algorithms.fsm.common.gspan.UndirectedGSpanLogic;
-import org.gradoop.flink.algorithms.fsm.cross_level.tuples.EncodedMultilevelGraph;
-import org.gradoop.flink.algorithms.fsm.cross_level.tuples.MDGraphWithPatternEmbeddingsMap;
+import org.gradoop.flink.algorithms.fsm.cross_level.tuples.MultilevelGraph;
+import org.gradoop.flink.algorithms.fsm.cross_level.tuples.MultilevelGraphWithPatternEmbeddingsMap;
+import org.gradoop.flink.algorithms.fsm.cross_level.tuples.PatternVectors;
 import org.gradoop.flink.model.api.operators.UnaryCollectionToCollectionOperator;
 import org.gradoop.flink.model.impl.GraphCollection;
 import org.gradoop.flink.model.impl.GraphTransactions;
@@ -168,7 +163,7 @@ public class CrossLevelTFSM implements UnaryCollectionToCollectionOperator {
    */
   public DataSet<GraphTransaction> execute(DataSet<GraphTransaction> input) {
 
-    DataSet<EncodedMultilevelGraph> encodedInput = preProcess(input);
+    DataSet<MultilevelGraph> encodedInput = preProcess(input);
     DataSet<WithCount<int[]>> encodedOutput = mine(encodedInput);
 
     return postProcess(encodedOutput);
@@ -180,21 +175,13 @@ public class CrossLevelTFSM implements UnaryCollectionToCollectionOperator {
    * @param graphs input
    * @return preprocessed input
    */
-  private DataSet<EncodedMultilevelGraph> preProcess(DataSet<GraphTransaction> graphs) {
-
-    // Determine cardinality of input graph collection
-    this.graphCount = Count
-      .count(graphs);
-
-    // Calculate minimum frequency
-    this.minFrequency = graphCount
-      .map(new MinFrequency(fsmConfig));
+  private DataSet<MultilevelGraph> preProcess(DataSet<GraphTransaction> graphs) {
 
     // Execute vertex label pruning and dictionary coding
-    createDictionary(graphs);
+    createDictionaries(graphs);
 
     // Execute edge label pruning and dictionary coding
-    DataSet<EncodedMultilevelGraph> encodedGraphs = graphs
+    DataSet<MultilevelGraph> encodedGraphs = graphs
       .map(new Encode(fsmConfig))
       .withBroadcastSet(vertexLabelDictionary, FSMConstants.VERTEX_DICTIONARY)
       .withBroadcastSet(edgeLabelDictionary, FSMConstants.EDGE_DICTIONARY)
@@ -211,14 +198,14 @@ public class CrossLevelTFSM implements UnaryCollectionToCollectionOperator {
    * @param graphs preprocessed input graph collection
    * @return frequent patterns
    */
-  protected DataSet<WithCount<int[]>> mine(DataSet<EncodedMultilevelGraph> graphs) {
+  protected DataSet<WithCount<int[]>> mine(DataSet<MultilevelGraph> graphs) {
 
-    DataSet<MDGraphWithPatternEmbeddingsMap> searchSpace = graphs
+    DataSet<MultilevelGraphWithPatternEmbeddingsMap> searchSpace = graphs
       .map(new InitSingleEdgePatternEmbeddingsMap(gSpan));
 
     // Workaround to support multiple data sinks: create pseudo-graph (collector),
     // which embedding map will be used to union all k-edge frequent patterns
-    DataSet<MDGraphWithPatternEmbeddingsMap> collector = graphs
+    DataSet<MultilevelGraphWithPatternEmbeddingsMap> collector = graphs
       .getExecutionEnvironment()
       .fromElements(true)
       .map(new CreateCollector());
@@ -227,17 +214,17 @@ public class CrossLevelTFSM implements UnaryCollectionToCollectionOperator {
 
     // ITERATION HEAD
 
-    IterativeDataSet<MDGraphWithPatternEmbeddingsMap> iterative = searchSpace
+    IterativeDataSet<MultilevelGraphWithPatternEmbeddingsMap> iterative = searchSpace
       .iterate(MAX_ITERATIONS);
 
     // ITERATION BODY
 
-    DataSet<WithCount<int[]>> reports = iterative
+    DataSet<MultilevelGraph> reports = iterative
       .flatMap(new ReportSupportedPatterns());
 
-    DataSet<WithCount<int[]>> frequentPatterns = getFrequentPatterns(reports);
+    DataSet<PatternVectors> frequentPatterns = getFrequentPatterns(reports);
 
-    DataSet<MDGraphWithPatternEmbeddingsMap> grownEmbeddings = iterative
+    DataSet<MultilevelGraphWithPatternEmbeddingsMap> grownEmbeddings = iterative
       .map(new GrowFrequentPatterns(gSpan))
       .withBroadcastSet(frequentPatterns, FSMConstants.FREQUENT_PATTERNS)
       .filter(new NotObsolete());
@@ -271,12 +258,21 @@ public class CrossLevelTFSM implements UnaryCollectionToCollectionOperator {
    * @param graphs graphs with string-labels
    * @return graphs with dictionary-encoded vertex labels
    */
-  private void createDictionary(DataSet<GraphTransaction> graphs) {
+  private void createDictionaries(DataSet<GraphTransaction> graphs) {
 
     // LABEL PRUNING
 
     DataSet<Tuple3<String[], String[], String[]>> labels = graphs
       .map(new ReportLabels());
+
+
+    // Determine cardinality of input graph collection
+    this.graphCount = Count
+      .count(labels);
+
+    // Calculate minimum frequency
+    this.minFrequency = graphCount
+      .map(new MinFrequency(fsmConfig));
 
     DataSet<WithCount<String>> vertexLabels = labels
       .map(new Value0Of3<>())
@@ -337,13 +333,14 @@ public class CrossLevelTFSM implements UnaryCollectionToCollectionOperator {
    * @param patterns reported patterns
    * @return valid frequent patterns
    */
-  private DataSet<WithCount<int[]>> getFrequentPatterns(DataSet<WithCount<int[]>> patterns) {
+  private GroupReduceOperator<PatternVectors, PatternVectors> getFrequentPatterns(DataSet<MultilevelGraph> patterns) {
+
     return patterns
       .groupBy(0)
-      .sum(1)
-      .filter(new Frequent<>())
-      .withBroadcastSet(minFrequency, FSMConstants.MIN_FREQUENCY)
-      .filter(new VerifyPattern(gSpan));
+      .combineGroup(new CombineVectors(gSpan))
+      .groupBy(0)
+      .reduceGroup(new FrequentCrossLevelPatterns())
+      .withBroadcastSet(minFrequency, FSMConstants.MIN_FREQUENCY);
   }
 
   @Override

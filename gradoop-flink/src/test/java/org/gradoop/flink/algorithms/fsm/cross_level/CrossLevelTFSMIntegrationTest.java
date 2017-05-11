@@ -1,14 +1,30 @@
 package org.gradoop.flink.algorithms.fsm.cross_level;
 
+import org.gradoop.flink.algorithms.fsm.CrossLevelTFSM;
 import org.gradoop.flink.model.GradoopFlinkTestBase;
+import org.gradoop.flink.model.impl.GraphCollection;
 import org.gradoop.flink.util.FlinkAsciiGraphLoader;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 public class CrossLevelTFSMIntegrationTest extends GradoopFlinkTestBase {
 
   @Test
   public void testExecute() throws Exception {
 
+    FlinkAsciiGraphLoader loader = getLoader();
+
+    loader.getDatabase();
+
+    CrossLevelTFSM fsm = new CrossLevelTFSM(1.0f);
+
+    GraphCollection result = fsm.execute(loader.getGraphCollectionByVariables("g1", "g2", "g3"));
+
+    assertEquals(35, result.getGraphHeads().count());
+  }
+
+  private FlinkAsciiGraphLoader getLoader() {
     String asciiGraphs =
       "g1[(v1:A {_dl_0:\"1\",_dl_1:\"1\"})-[:a]->(:B{_dl_0:\"1\",_dl_1:\"1\",_dl_2:\"1\"})-[:a]->(:C)-[:a]->(v1)]" +
       "g2[(v2:A {_dl_0:\"1\",_dl_1:\"1\"})-[:a]->(:B{_dl_0:\"1\",_dl_1:\"1\",_dl_2:\"2\"})-[:a]->(:C)-[:a]->(v2)]" +
@@ -54,7 +70,7 @@ public class CrossLevelTFSMIntegrationTest extends GradoopFlinkTestBase {
       "d5[(:A {_dl_0:\"1\"})-[:a]->(:B{_dl_0:\"1\"})]" +
       "d6[(:A {_dl_0:\"1\"})-[:a]->(:B{_dl_0:\"1\",_dl_1:\"1\"})]" +
 
-//      // only B-C edge
+      // only B-C edge
       "e1[(:B)-[:a]->(:C)]" +
       "e2[(:B{_dl_0:\"1\"})-[:a]->(:C)]" +
       "e3[(:B{_dl_0:\"1\",_dl_1:\"1\"})-[:a]->(:C)]" +
@@ -65,9 +81,6 @@ public class CrossLevelTFSMIntegrationTest extends GradoopFlinkTestBase {
 
       "";
 
-    FlinkAsciiGraphLoader loader = getLoaderFromString(asciiGraphs);
-
-    System.out.println(loader.getVertices());
-
+    return getLoaderFromString(asciiGraphs);
   }
 }

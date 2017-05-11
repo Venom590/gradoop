@@ -19,23 +19,68 @@ package org.gradoop.flink.algorithms.fsm.cross_level.functions.mining;
 
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.util.Collector;
-import org.gradoop.flink.algorithms.fsm.cross_level.tuples.MDGraphWithPatternEmbeddingsMap;
-import org.gradoop.flink.model.impl.tuples.WithCount;
+import org.gradoop.flink.algorithms.fsm.common.tuples.PatternEmbeddingsMap;
+import org.gradoop.flink.algorithms.fsm.cross_level.tuples.MultilevelGraph;
+import org.gradoop.flink.algorithms.fsm.cross_level.tuples.MultilevelGraphWithPatternEmbeddingsMap;
+import org.gradoop.flink.algorithms.fsm.cross_level.vector_mining.CrossLevelVectorComparator;
+import org.gradoop.flink.algorithms.fsm.dimspan.model.Simple16Compressor;
+
+import java.util.Arrays;
 
 /**
  * (graph, pattern->embeddings) => (pattern, 1),..
  */
 public class ReportSupportedPatterns
-  implements FlatMapFunction<MDGraphWithPatternEmbeddingsMap, WithCount<int[]>> {
+  implements FlatMapFunction<MultilevelGraphWithPatternEmbeddingsMap, MultilevelGraph> {
+
+  private final MultilevelGraph reuseTuple = new MultilevelGraph();
 
   @Override
-  public void flatMap(MDGraphWithPatternEmbeddingsMap graphEmbeddings,
-    Collector<WithCount<int[]>> collector) throws Exception {
+  public void flatMap(MultilevelGraphWithPatternEmbeddingsMap graphEmbeddings,
+    Collector<MultilevelGraph> collector) throws Exception {
 
     if (! graphEmbeddings.isFrequentPatternCollector()) {
-      for (int i = 0; i < graphEmbeddings.getMap().getPatternCount(); i++) {
-        int[] pattern = graphEmbeddings.getMap().getKeys()[i];
-        collector.collect(new WithCount<>(pattern));
+      PatternEmbeddingsMap map = graphEmbeddings.getMap();
+
+      int[][] graphLevels = graphEmbeddings.getGraph().getVector();
+
+      for (int p = 0; p < map.getPatternCount(); p++) {
+        int[] pattern = map.getKeys()[p];
+
+        pattern = Simple16Compressor.uncompress(pattern);
+
+        int[][] embeddingData = map.getEmbeddings(p, true);
+        int embeddingCount = embeddingData.length / 2;
+
+        int[][][] embeddingLevels = new int[embeddingCount][][];
+
+        int vertexCount = embeddingData[0].length;
+
+        for (int e = 0; e < embeddingCount; e++) {
+          int[] vertexMapping = embeddingData[2 * e];
+          int[][] patternLevels = new int[vertexCount][];
+
+          for (int v = 0; v < vertexCount; v++) {
+            patternLevels[v] = graphLevels[vertexMapping[v]];
+          }
+
+          embeddingLevels[e] = patternLevels;
+        }
+
+        Arrays.sort(embeddingLevels, new CrossLevelVectorComparator());
+
+        int[][] last = new int[0][];
+
+        pattern = Simple16Compressor.compress(pattern);
+
+        for (int[][] current : embeddingLevels) {
+          if (! Arrays.equals(current, last)) {
+            last = current;
+            reuseTuple.setGraph(pattern);
+            reuseTuple.setLevels(current);
+            collector.collect(reuseTuple);
+          }
+        }
       }
     }
   }
