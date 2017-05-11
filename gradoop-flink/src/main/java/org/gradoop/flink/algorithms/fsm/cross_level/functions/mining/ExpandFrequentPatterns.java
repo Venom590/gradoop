@@ -19,6 +19,8 @@ package org.gradoop.flink.algorithms.fsm.cross_level.functions.mining;
 
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.util.Collector;
+import org.gradoop.flink.algorithms.fsm.common.tuples.PatternEmbeddingsMap;
+import org.gradoop.flink.algorithms.fsm.cross_level.model.MultilevelVectorUtils;
 import org.gradoop.flink.algorithms.fsm.cross_level.tuples.MultilevelGraphWithPatternEmbeddingsMap;
 import org.gradoop.flink.model.impl.tuples.WithCount;
 
@@ -32,10 +34,16 @@ public class ExpandFrequentPatterns
   public void flatMap(MultilevelGraphWithPatternEmbeddingsMap graphWithPatternEmbeddingsMap,
     Collector<WithCount<int[]>> collector) throws Exception {
 
-    for (int i = 0; i < graphWithPatternEmbeddingsMap.getMap().getPatternCount(); i++) {
-      int[] pattern = graphWithPatternEmbeddingsMap.getMap().getPattern(i);
-      int frequency = graphWithPatternEmbeddingsMap.getMap().getValues()[i][0];
-      collector.collect(new WithCount<>(pattern, frequency));
+    PatternEmbeddingsMap map = graphWithPatternEmbeddingsMap.getMap();
+
+    for (int i = 0; i < map.getPatternCount(); i++) {
+      int[] pattern = map.getPattern(i);
+
+      int[][][] vectors = MultilevelVectorUtils.demux(map.getValues()[i]);
+
+      for (int[][] vector : vectors) {
+        collector.collect(new WithCount<>(pattern, 0));
+      }
     }
   }
 }

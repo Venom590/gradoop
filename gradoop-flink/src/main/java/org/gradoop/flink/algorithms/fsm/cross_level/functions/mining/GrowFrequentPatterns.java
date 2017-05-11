@@ -18,12 +18,14 @@
 package org.gradoop.flink.algorithms.fsm.cross_level.functions.mining;
 
 import com.google.common.collect.Lists;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.flink.api.common.functions.RichMapFunction;
 import org.apache.flink.configuration.Configuration;
 import org.gradoop.flink.algorithms.fsm.common.config.FSMConstants;
 import org.gradoop.flink.algorithms.fsm.common.tuples.PatternEmbeddingsMap;
 import org.gradoop.flink.algorithms.fsm.common.comparison.DFSCodeComparator;
 import org.gradoop.flink.algorithms.fsm.common.gspan.GSpanLogic;
+import org.gradoop.flink.algorithms.fsm.cross_level.model.MultilevelVectorUtils;
 import org.gradoop.flink.algorithms.fsm.cross_level.model.Simple16Compressor;
 import org.gradoop.flink.algorithms.fsm.cross_level.tuples.MultilevelGraphWithPatternEmbeddingsMap;
 import org.gradoop.flink.algorithms.fsm.cross_level.tuples.PatternVectors;
@@ -103,7 +105,8 @@ public class GrowFrequentPatterns
   }
 
   @Override
-  public MultilevelGraphWithPatternEmbeddingsMap map(MultilevelGraphWithPatternEmbeddingsMap pair) throws Exception {
+  public MultilevelGraphWithPatternEmbeddingsMap map(
+    MultilevelGraphWithPatternEmbeddingsMap pair) throws Exception {
 
     // union k-1 edge frequent patterns with k-edge ones
     if (pair.isFrequentPatternCollector()) {
@@ -111,7 +114,8 @@ public class GrowFrequentPatterns
         WithCount<int[]> patternWithFrequency =
           new WithCount<>(patternVectors.getPattern(), patternVectors.getVectors().length);
 
-        pair.getMap().collect(patternWithFrequency);
+        pair.getMap().put(
+          patternWithFrequency.getObject(), MultilevelVectorUtils.mux(patternVectors.getVectors()));
       }
     } else {
       int[] graph = pair.getGraph().getGraph();

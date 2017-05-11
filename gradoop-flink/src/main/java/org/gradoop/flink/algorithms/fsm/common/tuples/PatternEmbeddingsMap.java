@@ -146,17 +146,6 @@ public class PatternEmbeddingsMap extends Tuple2<int[][], int[][]> {
     setValues(ArrayUtils.addAll(this.getValues(), that.getValues()));
   }
 
-
-  /**
-   * Adds a pattern but no embeddings.
-   *
-   * @param muxWithCount pattern
-   */
-  public void collect(WithCount<int[]> muxWithCount) {
-    setKeys(ArrayUtils.add(getKeys(), muxWithCount.getObject()));
-    setValues(ArrayUtils.add(getValues(), new int[] {(int) muxWithCount.getCount()}));
-  }
-
   /**
    * Returns all embeddings for a give pattern index.
    *

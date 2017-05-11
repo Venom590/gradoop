@@ -28,8 +28,7 @@ import java.util.List;
  */
 public class CrossLevelTFSMConfig extends FSMConfigBase {
 
-  private final String dimensionKeyPrefix;
-  private final String dimensionValueSeparator;
+  private VectorMiningStrategy vectorMiningStrategy;
 
   /**
    * valued constructor
@@ -38,8 +37,7 @@ public class CrossLevelTFSMConfig extends FSMConfigBase {
    */
   public CrossLevelTFSMConfig(float minSupport, boolean directed) {
     super(minSupport, directed);
-    dimensionKeyPrefix = "dim";
-    dimensionValueSeparator = ".";
+    vectorMiningStrategy = VectorMiningStrategy.TOP_DOWN;
   }
 
   @Override
@@ -55,11 +53,11 @@ public class CrossLevelTFSMConfig extends FSMConfigBase {
     return StringUtils.join(parameters, "|");
   }
 
-  public String getDimensionKeyPrefix() {
-    return dimensionKeyPrefix;
+  public VectorMiningStrategy getVectorMiningStrategy() {
+    return vectorMiningStrategy;
   }
 
-  public String getDimensionValueSeparator() {
-    return dimensionValueSeparator;
+  public void setVectorMiningStrategy(VectorMiningStrategy vectorMiningStrategy) {
+    this.vectorMiningStrategy = vectorMiningStrategy;
   }
 }

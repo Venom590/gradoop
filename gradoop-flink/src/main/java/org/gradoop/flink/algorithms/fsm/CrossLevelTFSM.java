@@ -28,11 +28,14 @@ import org.gradoop.flink.algorithms.fsm.common.comparison.InverseProportionalLab
 import org.gradoop.flink.algorithms.fsm.common.comparison.LabelComparator;
 import org.gradoop.flink.algorithms.fsm.common.comparison.ProportionalLabelComparator;
 import org.gradoop.flink.algorithms.fsm.cross_level.config.CrossLevelTFSMConfig;
+import org.gradoop.flink.algorithms.fsm.cross_level.config.VectorMiningStrategy;
 import org.gradoop.flink.algorithms.fsm.cross_level.functions.conversion.DFSCodeToEPGMGraphTransaction;
 
 import org.gradoop.flink.algorithms.fsm.cross_level.functions.mining.*;
 import org.gradoop.flink.algorithms.fsm.cross_level.functions.preprocessing.CreateDictionary;
 import org.gradoop.flink.algorithms.fsm.cross_level.functions.preprocessing.Encode;
+import org.gradoop.flink.algorithms.fsm.cross_level.functions.preprocessing
+  .InsertDummyZeroIntoDictionary;
 import org.gradoop.flink.algorithms.fsm.cross_level.functions.preprocessing.MinFrequency;
 import org.gradoop.flink.algorithms.fsm.cross_level.functions.preprocessing.NotEmpty;
 import org.gradoop.flink.algorithms.fsm.cross_level.functions.preprocessing.ReportLabels;
@@ -42,6 +45,9 @@ import org.gradoop.flink.algorithms.fsm.common.gspan.UndirectedGSpanLogic;
 import org.gradoop.flink.algorithms.fsm.cross_level.tuples.MultilevelGraph;
 import org.gradoop.flink.algorithms.fsm.cross_level.tuples.MultilevelGraphWithPatternEmbeddingsMap;
 import org.gradoop.flink.algorithms.fsm.cross_level.tuples.PatternVectors;
+import org.gradoop.flink.algorithms.fsm.cross_level.vector_mining.CrossLevelFrequentVectors;
+import org.gradoop.flink.algorithms.fsm.cross_level.vector_mining.CrossLevelFrequentVectorsBottomUp;
+import org.gradoop.flink.algorithms.fsm.cross_level.vector_mining.CrossLevelFrequentVectorsTopDown;
 import org.gradoop.flink.model.api.operators.UnaryCollectionToCollectionOperator;
 import org.gradoop.flink.model.impl.GraphCollection;
 import org.gradoop.flink.model.impl.GraphTransactions;
@@ -85,6 +91,8 @@ public class CrossLevelTFSM implements UnaryCollectionToCollectionOperator {
    */
   protected final GSpanLogic gSpan;
 
+  private final CrossLevelFrequentVectors vectorMiner;
+
   /**
    * Vertex label dictionary for dictionary coding.
    */
@@ -126,6 +134,10 @@ public class CrossLevelTFSM implements UnaryCollectionToCollectionOperator {
     } else {
       comparator = new AlphabeticalLabelComparator();
     }
+
+    vectorMiner = fsmConfig.getVectorMiningStrategy().equals(VectorMiningStrategy.TOP_DOWN) ?
+      new CrossLevelFrequentVectorsTopDown() :
+      new CrossLevelFrequentVectorsBottomUp();
   }
 
   /**
@@ -298,7 +310,8 @@ public class CrossLevelTFSM implements UnaryCollectionToCollectionOperator {
     levelDictionary = levelValues
       .groupBy(0)
       .sum(1)
-      .reduceGroup(new CreateDictionary(comparator));
+      .reduceGroup(new CreateDictionary(comparator))
+      .map(new InsertDummyZeroIntoDictionary());
   }
 
   /**
@@ -339,7 +352,7 @@ public class CrossLevelTFSM implements UnaryCollectionToCollectionOperator {
       .groupBy(0)
       .combineGroup(new CombineVectors(gSpan))
       .groupBy(0)
-      .reduceGroup(new FrequentCrossLevelPatterns())
+      .reduceGroup(new FrequentCrossLevelPatterns(vectorMiner))
       .withBroadcastSet(minFrequency, FSMConstants.MIN_FREQUENCY);
   }
 

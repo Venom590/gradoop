@@ -1,8 +1,9 @@
 package org.gradoop.flink.algorithms.fsm.cross_level.vector_mining;
 
+import java.io.Serializable;
 import java.util.Comparator;
 
-public class CrossLevelVectorComparator implements Comparator<int[][]> {
+public class CrossLevelVectorComparator implements Comparator<int[][]>, Serializable {
 
   private final CrossLevelDimensionComparator fieldComparator = new CrossLevelDimensionComparator();
 

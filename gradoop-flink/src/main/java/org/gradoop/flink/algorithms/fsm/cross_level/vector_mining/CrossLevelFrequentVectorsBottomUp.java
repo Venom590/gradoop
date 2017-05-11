@@ -48,7 +48,6 @@ public class CrossLevelFrequentVectorsBottomUp extends CrossLevelFrequentVectors
     for (WithCount<int[][]> pattern : allLevels) {
       if (pattern.getCount() >= minFrequency) {
        frequentPatterns.add(pattern);
-//       System.out.println(IntArrayUtils.toString(pattern.getObject()) + "\t" + pattern.getCount());
       }
     }
 
@@ -98,29 +97,32 @@ public class CrossLevelFrequentVectorsBottomUp extends CrossLevelFrequentVectors
     // for each dimension starting from the right hand side
     for (int dim = dimCount - 1; dim >= 0; dim--) {
       int levelCount = schema[dim];
-      int[][] child = childWithCount.getObject();
-      long frequency = childWithCount.getCount();
-      int[] dimValues = child[dim];
 
-      // check, if dimension was already generalized
-      int lastGenLevel = ArrayUtils.indexOf(dimValues, 0);
+      if (levelCount > 0) {
+        int[][] child = childWithCount.getObject();
+        long frequency = childWithCount.getCount();
+        int[] dimValues = child[dim];
 
-      // if further generalization is possible
-      if (lastGenLevel != 0) {
+        // check, if dimension was already generalized
+        int lastGenLevel = ArrayUtils.indexOf(dimValues, 0);
 
-        // either next upper level (prior generalization) or base level (base value)
-        int genLevel = (lastGenLevel > 0 ? lastGenLevel : levelCount) - 1;
+        // if further generalization is possible
+        if (lastGenLevel != 0) {
 
-        int[][] parent = IntArrayUtils.deepCopy(child);
-        parent[dim][genLevel] = 0;
+          // either next upper level (prior generalization) or base level (base value)
+          int genLevel = (lastGenLevel > 0 ? lastGenLevel : levelCount) - 1;
 
-        currentLevel.add(new WithCount<>(parent, frequency));
+          int[][] parent = IntArrayUtils.deepCopy(child);
+          parent[dim][genLevel] = 0;
 
-      }
+          currentLevel.add(new WithCount<>(parent, frequency));
 
-      // Pruning: stop, if dimension was already generalized before
-      if (lastGenLevel >= 0) {
-        break;
+        }
+
+        // Pruning: stop, if dimension was already generalized before
+        if (lastGenLevel >= 0) {
+          break;
+        }
       }
     }
   }

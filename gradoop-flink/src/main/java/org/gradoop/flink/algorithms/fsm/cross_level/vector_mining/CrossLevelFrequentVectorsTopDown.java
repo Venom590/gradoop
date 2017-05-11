@@ -21,63 +21,63 @@ public class CrossLevelFrequentVectorsTopDown extends CrossLevelFrequentVectorsB
     SearchTreeNode root = getRoot(vectors);
 
     Collection<WithCount<int[][]>> frequentPatterns = Lists.newArrayList();
-    frequentPatterns.add(new WithCount<int[][]>(root.getPattern(), root.getFrequency()));
+    frequentPatterns.add(new WithCount<>(root.getPattern(), root.getFrequency()));
 
-    Collection<SearchTreeNode> dimParents = Lists.newArrayList();
-    Collection<SearchTreeNode> levelParents;
-
+    Collection<SearchTreeNode> dimParents = Lists.newArrayList(root);
+    Collection<SearchTreeNode> parentLevel;
 
     for (int dim = 0; dim < dimCount; dim++) {
       Collection<SearchTreeNode> dimChildren = Lists.newArrayList();
-      dimParents.add(root);
-      levelParents = dimParents;
+      parentLevel = dimParents;
 
-      for (int level = 0; level < schema[dim]; level++) {
-        Collection<SearchTreeNode> levelChildren = Lists.newArrayList();
+      int dimDepth = schema[dim];
 
-        for (SearchTreeNode parent : levelParents) {
-          int[][] pattern = IntArrayUtils.deepCopy(parent.getPattern());
+      if (dimDepth > 0) {
+        for (int level = 0; level < dimDepth; level++) {
+          Collection<SearchTreeNode> childLevel = Lists.newArrayList();
 
-          int lastValue = -1;
-          int[] occurrences = new int[0];
+          for (SearchTreeNode parent : parentLevel) {
 
-          for (int vectorIdx : parent.getOccurrences()) {
-            int value = vectors[vectorIdx][dim][level];
+            int[][] pattern = IntArrayUtils.deepCopy(parent.getPattern());
 
-            if (value > lastValue) {
-              if (occurrences.length >= minFrequency) {
-                pattern = IntArrayUtils.deepCopy(pattern);
-                pattern[dim][level] = value;
+            int lastValue = -1;
+            int[] occurrences = new int[0];
 
-                levelChildren.add(new SearchTreeNode(pattern, occurrences));
-                frequentPatterns.add(new WithCount<>(pattern, occurrences.length));
+            for (int vectorIdx : parent.getOccurrences()) {
+              int value = vectors[vectorIdx][dim][level];
+
+              if (value > lastValue) {
+
+                if (occurrences.length >= minFrequency) {
+                  pattern = IntArrayUtils.deepCopy(pattern);
+                  pattern[dim][level] = value;
+
+                  childLevel.add(new SearchTreeNode(pattern, occurrences));
+                  frequentPatterns.add(new WithCount<>(pattern, occurrences.length));
+                }
+
+                lastValue = value;
+                occurrences = new int[] {vectorIdx};
+              } else {
+                occurrences = ArrayUtils.add(occurrences, vectorIdx);
               }
+            }
 
-              lastValue = value;
-              occurrences = new int[] {vectorIdx};
-            } else {
-              occurrences = ArrayUtils.add(occurrences, vectorIdx);
+            if (occurrences.length >= minFrequency) {
+              pattern = IntArrayUtils.deepCopy(pattern);
+              pattern[dim][level] = lastValue;
+
+              childLevel.add(new SearchTreeNode(pattern, occurrences));
+              frequentPatterns.add(new WithCount<>(pattern, occurrences.length));
             }
           }
 
-          if (occurrences.length >= minFrequency) {
-            pattern = IntArrayUtils.deepCopy(pattern);
-            pattern[dim][level] = lastValue;
-
-            levelChildren.add(new SearchTreeNode(pattern, occurrences));
-            frequentPatterns.add(new WithCount<>(pattern, occurrences.length));
-          }
+          dimChildren.addAll(childLevel);
+          parentLevel = childLevel;
         }
-
-        dimChildren.addAll(levelChildren);
-        levelParents = levelChildren;
+        dimParents = dimChildren;
+        dimParents.add(root);
       }
-
-      dimParents = dimChildren;
-    }
-
-    for (WithCount<int[][]> fp : frequentPatterns) {
-      System.out.println(IntArrayUtils.toString(fp.getObject()));
     }
 
     return frequentPatterns;

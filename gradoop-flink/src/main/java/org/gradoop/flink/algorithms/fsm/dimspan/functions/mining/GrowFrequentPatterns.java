@@ -18,6 +18,7 @@
 package org.gradoop.flink.algorithms.fsm.dimspan.functions.mining;
 
 import com.google.common.collect.Lists;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.flink.api.common.functions.RichMapFunction;
 import org.apache.flink.configuration.Configuration;
 import org.gradoop.flink.algorithms.fsm.common.comparison.DFSCodeComparator;
@@ -154,7 +155,8 @@ public class GrowFrequentPatterns
     // union k-1 edge frequent patterns with k-edge ones
     if (pair.isFrequentPatternCollector()) {
       for (WithCount<int[]> patternWithFrequency : patternFrequencies) {
-        pair.getMap().collect(patternWithFrequency);
+        pair.getMap().put(
+          patternWithFrequency.getObject(), new int[] {(int) patternWithFrequency.getCount()});
       }
     } else {
       int[] graph = pair.getGraph();
