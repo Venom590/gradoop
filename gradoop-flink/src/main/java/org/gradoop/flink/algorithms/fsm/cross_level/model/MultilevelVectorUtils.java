@@ -1,7 +1,11 @@
 package org.gradoop.flink.algorithms.fsm.cross_level.model;
 
+import org.gradoop.common.util.IntArrayUtils;
+
 public class MultilevelVectorUtils {
 
+
+  public static final int COUNTS_OFFSET = 2;
 
   /**
    * [vectorLength,depth0,..,depth_n,value01,..,value_nm]
@@ -12,6 +16,7 @@ public class MultilevelVectorUtils {
   public static int[] mux(int[][][] vectors) {
     int[][] sample = vectors[0];
 
+    int vectorCount = vectors.length;
     int dimensionCount = sample.length;
     int[] schema = new int[dimensionCount];
 
@@ -23,12 +28,12 @@ public class MultilevelVectorUtils {
       vectorLength += dimensionLength;
     }
 
-    int[] mux = new int[1 + schema.length + vectors.length * vectorLength];
+    int[] mux = new int[COUNTS_OFFSET + schema.length + vectors.length * vectorLength];
 
-    int i = 0;
+    mux[0] = vectorCount;
+    mux[1] = dimensionCount;
 
-    mux[i] = dimensionCount;
-    i++;
+    int i = 2;
 
     for (int dimensionLength : schema) {
       mux[i] = dimensionLength;
@@ -44,26 +49,24 @@ public class MultilevelVectorUtils {
       }
     }
 
-
     return mux;
   }
 
   public static int[][][] demux(int[] mux) {
 
-    int dimensionCount = mux[0];
+    int vectorCount = mux[0];
+    int dimensionCount = mux[1];
+    int headerOffset = COUNTS_OFFSET + dimensionCount;
 
     int[] schema = new int[dimensionCount];
 
     // read schema
     int vectorLength = 0;
     for (int i = 0; i < dimensionCount; i++) {
-      int dimensionLength = mux[i + 1];
+      int dimensionLength = mux[i + COUNTS_OFFSET];
       schema[i] = dimensionLength;
       vectorLength += dimensionLength;
     }
-
-    int headerOffset = dimensionCount + 1;
-    int vectorCount = (mux.length - headerOffset) / vectorLength;
 
     int[][][] vectors = new int[vectorCount][][];
 
@@ -85,9 +88,9 @@ public class MultilevelVectorUtils {
 
         vector[d] = dimension;
       }
+
       vectors[v] = vector;
     }
-
 
 
     return vectors;
