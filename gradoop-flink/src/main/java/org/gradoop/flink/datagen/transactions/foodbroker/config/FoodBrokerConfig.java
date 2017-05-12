@@ -446,6 +446,80 @@ public class FoodBrokerConfig implements Serializable {
   }
 
   /**
+   * Loads the "Ticket" object.
+   *
+   * @return json object containing the Ticket settings
+   * @throws JSONException
+   */
+  private JSONObject getTicketNode() throws JSONException {
+    return getTransactionalNodes().getJSONObject("Ticket");
+  }
+
+  /**
+   * Loads the damaged product quality indicator.
+   *
+   * @return float value the quality
+   */
+  public Float getDamagedProductQuality() {
+    Double quality = 0.1d;
+
+    try {
+      quality = getTicketNode().getDouble("damagedProductQuality");
+    } catch (JSONException e) {
+      e.printStackTrace();
+    }
+    return quality.floatValue();
+  }
+
+  /**
+   * Loads the bad price performance ratio min rate.
+   *
+   * @return float value the min rate
+   */
+  public Float getBadPricePerformanceRatioMinRate() {
+    Double quality = 0.5d;
+
+    try {
+      quality = getTicketNode().getDouble("badPricePerformanceRatioMinRate");
+    } catch (JSONException e) {
+      e.printStackTrace();
+    }
+    return quality.floatValue();
+  }
+
+  /**
+   * Loads the bad price performance ratio quality indicator.
+   *
+   * @return float value the quality
+   */
+  public Float getBadPricePerformanceRatioQuality() {
+    Double quality = 0.4d;
+
+    try {
+      quality = getTicketNode().getDouble("badPricePerformanceRatioQuality");
+    } catch (JSONException e) {
+      e.printStackTrace();
+    }
+    return quality.floatValue();
+  }
+
+  /**
+   * Loads the late delivery accepted time of exceeding.
+   *
+   * @return float value the quality
+   */
+  public Integer getLateDeliveryAcceptedDays() {
+    Integer quality = 0;
+
+    try {
+      quality = getTicketNode().getInt("badPricePerformanceRatioQuality");
+    } catch (JSONException e) {
+      e.printStackTrace();
+    }
+    return quality;
+  }
+
+  /**
    * Loads the "Quality" object.
    *
    * @return json object containing the quality settings

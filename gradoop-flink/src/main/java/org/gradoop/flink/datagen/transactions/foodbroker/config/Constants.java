@@ -111,7 +111,7 @@ public class Constants {
   /**
    * Property key for product: perishableness level.
    */
-  public static final String PERISHABLENESS_LEVEL = "perishablenessLevel";
+  public static final String PRODUCT_PERISHABLENESS_LEVEL_KEY = "perishablenessLevel";
   /**
    * Property key for transactional vertices: date.
    */
@@ -377,13 +377,33 @@ public class Constants {
    */
   public static final String TI_PURCHREFUND_CONFIG_KEY = "purchRefund";
   /**
-   * Text for Ticket
+   * Text for bad quality ticket.
    */
-  public static final String BADQUALITY_TICKET_PROBLEM = "bad quality";
+  public static final String TICKET_BADQUALITY_PROBLEM = "bad quality";
   /**
-   * Text for Ticket
+   * Text for bad quality - damaged product - ticket.
    */
-  public static final String LATEDELIVERY_TICKET_PROBLEM = "late delivery";
+  public static final String TICKET_BADQUALITY_DAMAGED_PRODUCT_PROBLEM =
+    "bad quality - damaged product";
+  /**
+   * Text for bad quality - bad ppr - ticket.
+   */
+  public static final String TICKET_BADQUALITY_BAD_PPR_PROBLEM =
+    "bad quality - bad price performance ratio";
+  /**
+   * Text for late delivery ticket.
+   */
+  public static final String TICKET_LATEDELIVERY_PROBLEM = "late delivery";
+  /**
+   * Text for late delivery - accepted day - ticket.
+   */
+  public static final String TICKET_LATEDELIVERY_ACCEPTED_DAY_PROBLEM =
+    "late delivery - short time late";
+  /**
+   * Text for late delivery - exceeded perishableness - ticket.
+   */
+  public static final String TICKET_LATEDELIVERY_FOUL_PRODUCT_PROBLEM =
+    "late delivery - received foul product";
   /**
    * Broadcast variable for the customers adjectives.
    */
