@@ -42,57 +42,50 @@ public class Product extends MasterData {
     /**
      * Level one, extreme durable.
      */
-    ONE {
-      @Override
-      public String toString() {
-        return "extreme durable";
-      }
-    },
+    EXTREME_PERISHABLE(0),
     /**
      * Level two, very durable.
      */
-    TWO {
-      @Override
-      public String toString() {
-        return "very durable";
-      }
-    },
+    VERY_PERISHABLE(1),
     /**
      * Level three, durable.
      */
-    THREE {
-      @Override
-      public String toString() {
-        return "durable";
-      }
-    },
+    PERISHABLE(2),
     /**
      * Level four, perishable.
      */
-    FOUR {
-      @Override
-      public String toString() {
-        return "perishable";
-      }
-    },
+    DURABLE(3),
     /**
      * Level five, very perishable.
      */
-    FIVE {
-      @Override
-      public String toString() {
-        return "very perishable";
-      }
-    },
+    VERY_DURABLE(4),
     /**
      * Level six, extreme perishable.
      */
-    SIX {
-      @Override
-      public String toString() {
-        return "extreme perishable";
-      }
-    },
+    EXTREME_DURABLE(5);
+
+    /**
+     * Integer value representing the perishableness level of a product.
+     */
+    private final int value;
+
+    /**
+     * Valued constructor.
+     *
+     * @param newValue defines the perishableness level
+     */
+    PerishablenessLevel(final int newValue) {
+      value = newValue;
+    }
+
+    /**
+     * Returns the integer value of the perishableness level.
+     *
+     * @return integer of the perishableness level
+     */
+    public int getValue() {
+      return value;
+    }
   }
 
   /**
@@ -175,7 +168,8 @@ public class Product extends MasterData {
     }
     int level = random.nextInt((maxLevel - minLevel) + 1) + minLevel;
     properties.set(
-      Constants.PERISHABLENESS_LEVEL, PerishablenessLevel.values()[level - 1].toString());
+      Constants.PRODUCT_PERISHABLENESS_LEVEL_KEY,
+      PerishablenessLevel.values()[level - 1].getValue());
 
     properties.set(Constants.PRICE_KEY, generatePrice());
     return vertexFactory.createVertex(Constants.PRODUCT_VERTEX_LABEL, properties);
