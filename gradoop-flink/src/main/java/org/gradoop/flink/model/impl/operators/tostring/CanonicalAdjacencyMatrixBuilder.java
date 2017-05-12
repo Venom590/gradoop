@@ -159,10 +159,10 @@ public class CanonicalAdjacencyMatrixBuilder implements
       vertexLabels = vertexLabels
         .leftOuterJoin(outgoingAdjacencyListLabels)
         .where(0, 1).equalTo(0, 1)
-        .with(new LabelCombiner<VertexString>())
+        .with(new LabelCombiner<>())
         .leftOuterJoin(incomingAdjacencyListLabels)
         .where(0, 1).equalTo(0, 1)
-        .with(new LabelCombiner<VertexString>());
+        .with(new LabelCombiner<>());
     } else {
     // undirected graph
 
@@ -192,7 +192,7 @@ public class CanonicalAdjacencyMatrixBuilder implements
       vertexLabels = vertexLabels
         .leftOuterJoin(adjacencyListLabels)
         .where(0, 1).equalTo(0, 1)
-        .with(new LabelCombiner<VertexString>());
+        .with(new LabelCombiner<>());
     }
 
     // 9. create adjacency matrix labels
@@ -206,7 +206,7 @@ public class CanonicalAdjacencyMatrixBuilder implements
     graphHeadLabels = graphHeadLabels
       .leftOuterJoin(adjacencyMatrixLabels)
       .where(0).equalTo(0)
-      .with(new LabelCombiner<GraphHeadString>());
+      .with(new LabelCombiner<>());
     return graphHeadLabels;
   }
 }

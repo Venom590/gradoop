@@ -17,28 +17,34 @@
 
 package org.gradoop.flink.algorithms.fsm.cross_level.functions.conversion;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.apache.flink.api.common.functions.RichMapFunction;
+import org.apache.flink.api.java.tuple.Tuple1;
 import org.apache.flink.configuration.Configuration;
 import org.gradoop.common.model.impl.id.GradoopId;
 import org.gradoop.common.model.impl.id.GradoopIdList;
 import org.gradoop.common.model.impl.pojo.Edge;
 import org.gradoop.common.model.impl.pojo.GraphHead;
 import org.gradoop.common.model.impl.pojo.Vertex;
+import org.gradoop.common.util.IntArrayUtils;
 import org.gradoop.flink.algorithms.fsm.common.config.FSMConstants;
 import org.gradoop.flink.algorithms.fsm.cross_level.model.GraphUtils;
 import org.gradoop.flink.algorithms.fsm.cross_level.model.GraphUtilsBase;
 import org.gradoop.flink.algorithms.fsm.cross_level.model.Simple16Compressor;
+import org.gradoop.flink.algorithms.fsm.cross_level.tuples.MultilevelGraph;
+import org.gradoop.flink.model.impl.operators.tostring.CanonicalAdjacencyMatrixBuilder;
 import org.gradoop.flink.model.impl.tuples.WithCount;
 import org.gradoop.flink.representation.transactional.GraphTransaction;
 
+import java.util.List;
 import java.util.Set;
 
 /**
  * int-array encoded graph => Gradoop Graph Transaction
  */
-public class DFSCodeToEPGMGraphTransaction
-  extends RichMapFunction<WithCount<int[]>, GraphTransaction> {
+public class MultilevelPatternToEPGMGraphTransaction
+  extends RichMapFunction<MultilevelGraph, GraphTransaction> {
 
 
   /**
@@ -50,6 +56,12 @@ public class DFSCodeToEPGMGraphTransaction
    * frequent vertex labels
    */
   private String[] edgeDictionary;
+
+  /**
+   * frequent vertex labels
+   */
+  private String[] levelDictionary;
+
 
   /**
    * utils to interpret and manipulate integer encoded graphs
@@ -71,25 +83,33 @@ public class DFSCodeToEPGMGraphTransaction
     edgeDictionary = getRuntimeContext()
       .<String[]>getBroadcastVariable(FSMConstants.EDGE_DICTIONARY).get(0);
 
+    List<String[]> broadcast =
+      getRuntimeContext().<String[]>getBroadcastVariable(FSMConstants.LEVEL_DICTIONARY);
+
+    levelDictionary = broadcast.size() == 0 ? new String[0] : broadcast.get(0);
+
     graphCount = getRuntimeContext()
       .<Long>getBroadcastVariable(FSMConstants.GRAPH_COUNT).get(0);
   }
 
   @Override
-  public GraphTransaction map(WithCount<int[]> patternWithCount) throws Exception {
+  public GraphTransaction map(MultilevelGraph multilevelPattern) throws Exception {
 
-    int[] pattern = patternWithCount.getObject();
+    int[] pattern = multilevelPattern.getGraph();
+
+    int[][] vector = multilevelPattern.getVector();
 
     pattern = Simple16Compressor.uncompress(pattern);
 
 
-    long frequency = patternWithCount.getCount();
+    long frequency = 0;
 
 
     // GRAPH HEAD
     GraphHead graphHead = new GraphHead(GradoopId.get(), "", null);
-    graphHead.setLabel(FSMConstants.FREQUENT_PATTERN_LABEL);
-    graphHead.setProperty(FSMConstants.SUPPORT_KEY, (float) frequency / graphCount);
+
+//    graphHead.setLabel(FSMConstants.FREQUENT_PATTERN_LABEL);
+//    graphHead.setProperty(FSMConstants.SUPPORT_KEY, (float) frequency / graphCount);
 
     GradoopIdList graphIds = GradoopIdList.fromExisting(graphHead.getId());
 
@@ -105,7 +125,22 @@ public class DFSCodeToEPGMGraphTransaction
       String label = vertexDictionary[intLabel];
 
       GradoopId gradoopId = GradoopId.get();
-      vertices.add(new Vertex(gradoopId, label, null, graphIds));
+      Vertex vertex = new Vertex(gradoopId, label, null, graphIds);
+
+      int[] dimension = vector[intId];
+
+      for (int level = 0; level < dimension.length; level++) {
+        int value = dimension[level];
+
+        if (value == 0) {
+          break;
+        } else {
+          vertex.setProperty(
+            FSMConstants.LEVEL_PREFIX + String.valueOf(level), levelDictionary[value]);
+        }
+      }
+
+      vertices.add(vertex);
 
       vertexIds[intId] = gradoopId;
       intId++;
@@ -131,6 +166,8 @@ public class DFSCodeToEPGMGraphTransaction
       edges.add(new Edge(GradoopId.get(), label, sourceId, targetId, null, graphIds));
     }
 
-    return new GraphTransaction(graphHead, vertices, edges);
+    GraphTransaction graphTransaction = new GraphTransaction(graphHead, vertices, edges);
+
+    return graphTransaction;
   }
 }

@@ -29,7 +29,7 @@ import org.gradoop.flink.algorithms.fsm.common.comparison.LabelComparator;
 import org.gradoop.flink.algorithms.fsm.common.comparison.ProportionalLabelComparator;
 import org.gradoop.flink.algorithms.fsm.cross_level.config.CrossLevelTFSMConfig;
 import org.gradoop.flink.algorithms.fsm.cross_level.config.VectorMiningStrategy;
-import org.gradoop.flink.algorithms.fsm.cross_level.functions.conversion.DFSCodeToEPGMGraphTransaction;
+import org.gradoop.flink.algorithms.fsm.cross_level.functions.conversion.MultilevelPatternToEPGMGraphTransaction;
 
 import org.gradoop.flink.algorithms.fsm.cross_level.functions.mining.*;
 import org.gradoop.flink.algorithms.fsm.cross_level.functions.preprocessing.CreateDictionary;
@@ -176,7 +176,7 @@ public class CrossLevelTFSM implements UnaryCollectionToCollectionOperator {
   public DataSet<GraphTransaction> execute(DataSet<GraphTransaction> input) {
 
     DataSet<MultilevelGraph> encodedInput = preProcess(input);
-    DataSet<WithCount<int[]>> encodedOutput = mine(encodedInput);
+    DataSet<MultilevelGraph> encodedOutput = mine(encodedInput);
 
     return postProcess(encodedOutput);
   }
@@ -210,7 +210,7 @@ public class CrossLevelTFSM implements UnaryCollectionToCollectionOperator {
    * @param graphs preprocessed input graph collection
    * @return frequent patterns
    */
-  protected DataSet<WithCount<int[]>> mine(DataSet<MultilevelGraph> graphs) {
+  protected DataSet<MultilevelGraph> mine(DataSet<MultilevelGraph> graphs) {
 
     DataSet<MultilevelGraphWithPatternEmbeddingsMap> searchSpace = graphs
       .map(new InitSingleEdgePatternEmbeddingsMap(gSpan));
@@ -256,11 +256,12 @@ public class CrossLevelTFSM implements UnaryCollectionToCollectionOperator {
    * @param encodedOutput frequent patterns represented by multiplexed int-arrays
    * @return Gradoop graph transactions
    */
-  private DataSet<GraphTransaction> postProcess(DataSet<WithCount<int[]>> encodedOutput) {
+  private DataSet<GraphTransaction> postProcess(DataSet<MultilevelGraph> encodedOutput) {
     return encodedOutput
-      .map(new DFSCodeToEPGMGraphTransaction())
+      .map(new MultilevelPatternToEPGMGraphTransaction())
       .withBroadcastSet(vertexLabelDictionary, FSMConstants.VERTEX_DICTIONARY)
       .withBroadcastSet(edgeLabelDictionary, FSMConstants.EDGE_DICTIONARY)
+      .withBroadcastSet(levelDictionary, FSMConstants.LEVEL_DICTIONARY)
       .withBroadcastSet(graphCount, FSMConstants.GRAPH_COUNT);
   }
 

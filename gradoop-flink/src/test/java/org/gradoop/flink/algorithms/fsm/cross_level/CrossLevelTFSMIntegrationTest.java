@@ -2,7 +2,9 @@ package org.gradoop.flink.algorithms.fsm.cross_level;
 
 import org.gradoop.flink.algorithms.fsm.CrossLevelTFSM;
 import org.gradoop.flink.model.GradoopFlinkTestBase;
+import org.gradoop.flink.model.impl.GradoopFlinkTestUtils;
 import org.gradoop.flink.model.impl.GraphCollection;
+import org.gradoop.flink.model.impl.operators.tostring.CanonicalAdjacencyMatrixBuilder;
 import org.gradoop.flink.util.FlinkAsciiGraphLoader;
 import org.junit.Test;
 
@@ -13,15 +15,36 @@ public class CrossLevelTFSMIntegrationTest extends GradoopFlinkTestBase {
   @Test
   public void testExecute() throws Exception {
 
+    getExecutionEnvironment().setParallelism(1);
+
     FlinkAsciiGraphLoader loader = getLoader();
 
     loader.getDatabase();
 
     CrossLevelTFSM fsm = new CrossLevelTFSM(1.0f);
 
+
     GraphCollection result = fsm.execute(loader.getGraphCollectionByVariables("g1", "g2", "g3"));
 
-    assertEquals(35, result.getGraphHeads().count());
+//    assertEquals(35, result.getGraphHeads().count());
+
+    GraphCollection expected = loader.getGraphCollectionByVariables(
+      "f1", "f2", "f3", "f4", "f5", "f6",
+      "a1", "a2", "a3", "a4", "a5", "a6",
+      "b1", "b2", "b3", "b4", "b5", "b6",
+      "c1", "c2", "c3", "c4", "c5", "c6",
+      "d1", "d2", "d3", "d4", "d5", "d6",
+      "e1", "e2", "e3",
+      "h1", "h2");
+
+    GradoopFlinkTestUtils.printDirectedCanonicalAdjacencyMatrix(expected);
+
+    System.out.println("--------------");
+
+    GradoopFlinkTestUtils.printDirectedCanonicalAdjacencyMatrix(result);
+
+
+    collectAndAssertTrue(result.equalsByGraphElementData(expected));
   }
 
   private FlinkAsciiGraphLoader getLoader() {
@@ -76,8 +99,8 @@ public class CrossLevelTFSMIntegrationTest extends GradoopFlinkTestBase {
       "e3[(:B{_dl_0:\"1\",_dl_1:\"1\"})-[:a]->(:C)]" +
 
       // only C-A edge
-      "c1[(:C)-[:a]->(:A)]" +
-      "c4[(:C)-[:a]->(:A {_dl_0:\"1\"})]" +
+      "h1[(:C)-[:a]->(:A)]" +
+      "h2[(:C)-[:a]->(:A {_dl_0:\"1\"})]" +
 
       "";
 

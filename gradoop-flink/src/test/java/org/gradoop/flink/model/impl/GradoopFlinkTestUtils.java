@@ -2,6 +2,7 @@ package org.gradoop.flink.model.impl;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import org.apache.commons.lang.StringUtils;
 import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.ExecutionEnvironment;
 import org.apache.flink.api.java.io.LocalCollectionOutputFormat;
@@ -27,6 +28,7 @@ import org.gradoop.flink.representation.transactional.AdjacencyList;
 import org.gradoop.flink.representation.transactional.GraphTransaction;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -117,10 +119,13 @@ public class GradoopFlinkTestUtils {
   public static void printDirectedCanonicalAdjacencyMatrix(
     GraphCollection collection) throws Exception {
 
-    new CanonicalAdjacencyMatrixBuilder(
-      new GraphHeadToDataString(),
-      new VertexToDataString(),
-      new EdgeToDataString(), true).execute(collection).print();
+    List<String> strings =
+      new CanonicalAdjacencyMatrixBuilder(new GraphHeadToDataString(), new VertexToDataString(),
+        new EdgeToDataString(), true).execute(collection).collect();
+
+    Collections.sort(strings);
+
+    System.out.println(StringUtils.join(strings,"\n"));
   }
 
   public static void printUndirectedCanonicalAdjacencyMatrix(LogicalGraph graph)

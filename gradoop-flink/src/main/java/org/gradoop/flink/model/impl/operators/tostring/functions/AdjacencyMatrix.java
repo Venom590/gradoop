@@ -48,7 +48,7 @@ public class AdjacencyMatrix implements
         first = false;
       }
 
-      matrixRows.add("\n " + vertexString.getLabel());
+      matrixRows.add("|" + vertexString.getLabel());
     }
 
     Collections.sort(matrixRows);

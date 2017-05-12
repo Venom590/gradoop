@@ -51,7 +51,7 @@ public class OutgoingAdjacencyList
         first = false;
       }
 
-      adjacencyListEntries.add("\n  -" + edgeString.getEdgeLabel() + "->" +
+      adjacencyListEntries.add(",-" + edgeString.getEdgeLabel() + "->" +
         edgeString.getTargetLabel());
     }
 
