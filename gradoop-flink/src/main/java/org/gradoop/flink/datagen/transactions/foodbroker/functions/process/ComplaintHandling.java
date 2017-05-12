@@ -35,11 +35,11 @@ import org.gradoop.common.model.impl.pojo.VertexFactory;
 import org.gradoop.common.model.impl.properties.Properties;
 import org.gradoop.flink.datagen.transactions.foodbroker.config.Constants;
 import org.gradoop.flink.datagen.transactions.foodbroker.config.FoodBrokerConfig;
+import org.gradoop.flink.datagen.transactions.foodbroker.functions.masterdata.Product;
 import org.gradoop.flink.representation.transactional.GraphTransaction;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -71,6 +71,10 @@ public class ComplaintHandling
    * Set containing all purch order lines for one graph transaction.
    */
   private Set<Edge> purchOrderLines;
+  /**
+   * Map containing all products perishableness levels for each product id.
+   */
+  private Map<GradoopId, Integer> products;
   /**
    * The sales order from one graph transaction.
    */
@@ -111,13 +115,20 @@ public class ComplaintHandling
     vertexMap = Maps.newHashMap();
     masterDataMap = Maps.newHashMap();
     userMap = Maps.newHashMap();
+    products = Maps.newHashMap();
 
     edgeMap = createEdgeMap(transaction);
-    //get needed transactional objects created during brokerage process
+    // get needed transactional objects created during brokerage process
     deliveryNotes = getVertexByLabel(transaction, Constants.DELIVERYNOTE_VERTEX_LABEL);
     salesOrderLines = getEdgesByLabel(transaction, Constants.SALESORDERLINE_EDGE_LABEL);
     purchOrderLines = getEdgesByLabel(transaction, Constants.PURCHORDERLINE_EDGE_LABEL);
     salesOrder = getVertexByLabel(transaction, Constants.SALESORDER_VERTEX_LABEL).iterator().next();
+    // store the perishableness level per product id
+    for (Vertex vertex : getVertexByLabel(transaction, Constants.PRODUCT_VERTEX_LABEL)) {
+      products.put(
+        vertex.getId(),
+        vertex.getPropertyValue(Constants.PRODUCT_PERISHABLENESS_LEVEL_KEY).getInt());
+    }
 
     //create new graph head
     graphHead = graphHeadFactory.createGraphHead();
@@ -150,6 +161,7 @@ public class ComplaintHandling
     List<Float> influencingMasterQuality;
     Set<Edge> currentPurchOrderLines;
     Set<Edge> badSalesOrderLines;
+    String problem;
 
     for (Vertex deliveryNote : deliveryNotes) {
       influencingMasterQuality = Lists.newArrayList();
@@ -173,13 +185,35 @@ public class ComplaintHandling
         influencingMasterQuality, Constants.TICKET_VERTEX_LABEL,
         Constants.TI_BADQUALITYPROBABILITY_CONFIG_KEY, false)) {
 
+        long damagedProducts = 0;
+        long pricePerformanceBadProducts = 0;
+        Float damagedProductBadQuality = config.getDamagedProductQuality();
+        Float pricePerformanceBadQuality = config.getBadPricePerformanceRatioQuality();
+        Float productQuality;
+
+        // count the amount of damaged or bad price performance ratio products
         for (Edge purchOrderLine : currentPurchOrderLines) {
           badSalesOrderLines.add(getCorrespondingSalesOrderLine(purchOrderLine.getId()));
+          productQuality = productQualityMap.get(purchOrderLine.getTargetId());
+          if (productQuality <= damagedProductBadQuality) {
+            damagedProducts++;
+          } else if (productQuality <= pricePerformanceBadQuality) {
+            pricePerformanceBadProducts++;
+          }
+        }
+        // check if the most of the set of products is of bad quality
+        if ((pricePerformanceBadProducts / currentPurchOrderLines.size()) >
+            config.getBadPricePerformanceRatioMinRate()) {
+          problem = Constants.TICKET_BADQUALITY_BAD_PPR_PROBLEM;
+        // otherwise check if a product is really damaged
+        } else if (damagedProducts > 0) {
+          problem = Constants.TICKET_BADQUALITY_DAMAGED_PRODUCT_PROBLEM;
+        } else {
+          problem = Constants.TICKET_BADQUALITY_PROBLEM;
         }
 
         Vertex ticket = newTicket(
-          Constants.BADQUALITY_TICKET_PROBLEM,
-          deliveryNote.getPropertyValue(Constants.DATE_KEY).getDate());
+          problem, deliveryNote.getPropertyValue(Constants.DATE_KEY).getDate());
         grantSalesRefund(badSalesOrderLines, ticket);
         claimPurchRefund(currentPurchOrderLines, ticket);
       }
@@ -193,30 +227,52 @@ public class ComplaintHandling
    */
   private void lateDelivery(Set<Vertex> deliveryNotes) {
     Set<Edge> lateSalesOrderLines = Sets.newHashSet();
+    Vertex ticket;
+    LocalDate createdDate;
+    Set<Edge> latePurchOrderLines;
+    Long daysOfExceeding;
+    LocalDate deliveryDate;
+    String problem;
+    Integer acceptedDaysOfExceeding = config.getLateDeliveryAcceptedDays();
+    Integer minPerishablenessLevel = Product.PerishablenessLevel.EXTREME_DURABLE.getValue();
+    LocalDate salesOrderDate = salesOrder.getPropertyValue(Constants.DELIVERYDATE_KEY).getDate();
 
     // Iterate over all delivery notes and take the sales order lines of
     // sales orders, which are late
     for (Vertex deliveryNote : deliveryNotes) {
-      if (deliveryNote.getPropertyValue(Constants.DATE_KEY).getDate()
-        .isAfter(salesOrder.getPropertyValue(Constants.DELIVERYDATE_KEY).getDate())) {
+      deliveryDate = deliveryNote.getPropertyValue(Constants.DATE_KEY).getDate();
+      if (deliveryDate.isAfter(salesOrderDate)) {
         lateSalesOrderLines.addAll(salesOrderLines);
       }
-    }
 
-    // If we have late sales order lines
-    if (!lateSalesOrderLines.isEmpty()) {
-      // Collect the respective late purch order lines
-      Set<Edge> latePurchOrderLines = Sets.newHashSet();
-      for (Edge salesOrderLine : lateSalesOrderLines) {
-        latePurchOrderLines.add(getCorrespondingPurchOrderLine(salesOrderLine.getId()));
+      // If we have late sales order lines
+      if (!lateSalesOrderLines.isEmpty()) {
+        // Collect the respective late purch order lines
+        latePurchOrderLines = Sets.newHashSet();
+        for (Edge salesOrderLine : lateSalesOrderLines) {
+          if (products.get(salesOrderLine.getTargetId()) < minPerishablenessLevel) {
+            minPerishablenessLevel = products.get(salesOrderLine.getTargetId());
+          }
+          latePurchOrderLines.add(getCorrespondingPurchOrderLine(salesOrderLine.getId()));
+        }
+        // number of days the product arrived to late
+        daysOfExceeding = deliveryDate.toEpochDay() - salesOrderDate.toEpochDay();
+        // if the product arrived to late, but within an accepted window
+        if (daysOfExceeding <= acceptedDaysOfExceeding) {
+          problem = Constants.TICKET_LATEDELIVERY_ACCEPTED_DAY_PROBLEM;
+        // if the product arrived foul
+        } else if (daysOfExceeding > minPerishablenessLevel) {
+          problem = Constants.TICKET_LATEDELIVERY_FOUL_PRODUCT_PROBLEM;
+        } else {
+          problem = Constants.TICKET_LATEDELIVERY_PROBLEM;
+        }
+        createdDate = salesOrder.getPropertyValue(Constants.DELIVERYDATE_KEY).getDate().plusDays(1);
+
+        // Create ticket and process refunds
+        ticket = newTicket(problem, createdDate);
+        grantSalesRefund(lateSalesOrderLines, ticket);
+        claimPurchRefund(latePurchOrderLines, ticket);
       }
-      LocalDate createdDate = salesOrder.getPropertyValue(Constants.DELIVERYDATE_KEY)
-        .getDate().plusDays(1);
-
-      // Create ticket and process refunds
-      Vertex ticket = newTicket(Constants.LATEDELIVERY_TICKET_PROBLEM, createdDate);
-      grantSalesRefund(lateSalesOrderLines, ticket);
-      claimPurchRefund(latePurchOrderLines, ticket);
     }
   }
 
