@@ -145,7 +145,7 @@ public class Encode extends RichMapFunction<GraphTransaction, MultilevelGraph> {
           depth = 0;
 
           for (Property property : vertex.getProperties()) {
-            if (property.getKey().startsWith(FSMConstants.LEVEL_PREFIX)) {
+            if (property.getKey().startsWith(FSMConstants.DIMENSION_PREFIX)) {
               depth++;
             }
           }
@@ -159,8 +159,8 @@ public class Encode extends RichMapFunction<GraphTransaction, MultilevelGraph> {
           for (Property property : vertex.getProperties()) {
             String key = property.getKey();
 
-            if (key.startsWith(FSMConstants.LEVEL_PREFIX)) {
-              int level = Integer.valueOf(key.substring(FSMConstants.LEVEL_PREFIX.length()));
+            if (key.startsWith(FSMConstants.DIMENSION_PREFIX)) {
+              int level = Integer.valueOf(key.substring(FSMConstants.DIMENSION_PREFIX.length()));
 
               levels[level] = levelDictionary.get(property.getValue().toString());
             }

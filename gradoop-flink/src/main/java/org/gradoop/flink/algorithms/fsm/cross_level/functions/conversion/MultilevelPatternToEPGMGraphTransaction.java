@@ -17,24 +17,19 @@
 
 package org.gradoop.flink.algorithms.fsm.cross_level.functions.conversion;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.apache.flink.api.common.functions.RichMapFunction;
-import org.apache.flink.api.java.tuple.Tuple1;
 import org.apache.flink.configuration.Configuration;
 import org.gradoop.common.model.impl.id.GradoopId;
 import org.gradoop.common.model.impl.id.GradoopIdList;
 import org.gradoop.common.model.impl.pojo.Edge;
 import org.gradoop.common.model.impl.pojo.GraphHead;
 import org.gradoop.common.model.impl.pojo.Vertex;
-import org.gradoop.common.util.IntArrayUtils;
 import org.gradoop.flink.algorithms.fsm.common.config.FSMConstants;
 import org.gradoop.flink.algorithms.fsm.cross_level.model.GraphUtils;
 import org.gradoop.flink.algorithms.fsm.cross_level.model.GraphUtilsBase;
 import org.gradoop.flink.algorithms.fsm.cross_level.model.Simple16Compressor;
 import org.gradoop.flink.algorithms.fsm.cross_level.tuples.MultilevelGraph;
-import org.gradoop.flink.model.impl.operators.tostring.CanonicalAdjacencyMatrixBuilder;
-import org.gradoop.flink.model.impl.tuples.WithCount;
 import org.gradoop.flink.representation.transactional.GraphTransaction;
 
 import java.util.List;
@@ -136,7 +131,7 @@ public class MultilevelPatternToEPGMGraphTransaction
           break;
         } else {
           vertex.setProperty(
-            FSMConstants.LEVEL_PREFIX + String.valueOf(level), levelDictionary[value]);
+            FSMConstants.DIMENSION_PREFIX + String.valueOf(level), levelDictionary[value]);
         }
       }
 

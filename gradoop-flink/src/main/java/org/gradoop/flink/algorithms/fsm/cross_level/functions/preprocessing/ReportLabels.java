@@ -54,7 +54,7 @@ public class ReportLabels
       vertexLabels.add(vertex.getLabel());
 
       for (Property property : vertex.getProperties()) {
-        if (property.getKey().startsWith(FSMConstants.LEVEL_PREFIX)) {
+        if (property.getKey().startsWith(FSMConstants.DIMENSION_PREFIX)) {
           levelValues.add(property.getValue().getString());
         }
       }

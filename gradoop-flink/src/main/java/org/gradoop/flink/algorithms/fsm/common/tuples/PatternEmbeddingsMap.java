@@ -229,4 +229,13 @@ public class PatternEmbeddingsMap extends Tuple2<int[][], int[][]> {
   public static PatternEmbeddingsMap getEmptyOne() {
     return new PatternEmbeddingsMap(new int[0][], new int[0][]);
   }
+
+  public int size() {
+    return getKeys().length;
+  }
+
+  public void delete(int i) {
+    setKeys(ArrayUtils.remove(getKeys(), i));
+    setValues(ArrayUtils.remove(getValues(), i));
+  }
 }

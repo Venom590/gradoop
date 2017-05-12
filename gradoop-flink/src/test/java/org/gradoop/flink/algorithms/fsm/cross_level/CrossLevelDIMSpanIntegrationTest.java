@@ -1,16 +1,15 @@
 package org.gradoop.flink.algorithms.fsm.cross_level;
 
+import org.gradoop.flink.algorithms.fsm.CrossLevelDIMSpan;
 import org.gradoop.flink.algorithms.fsm.CrossLevelTFSM;
+import org.gradoop.flink.algorithms.fsm.TransactionalFSM;
 import org.gradoop.flink.model.GradoopFlinkTestBase;
 import org.gradoop.flink.model.impl.GradoopFlinkTestUtils;
 import org.gradoop.flink.model.impl.GraphCollection;
-import org.gradoop.flink.model.impl.operators.tostring.CanonicalAdjacencyMatrixBuilder;
 import org.gradoop.flink.util.FlinkAsciiGraphLoader;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-
-public class CrossLevelTFSMIntegrationTest extends GradoopFlinkTestBase {
+public class CrossLevelDIMSpanIntegrationTest extends GradoopFlinkTestBase {
 
   @Test
   public void testExecute() throws Exception {
@@ -21,8 +20,7 @@ public class CrossLevelTFSMIntegrationTest extends GradoopFlinkTestBase {
 
     loader.getDatabase();
 
-    CrossLevelTFSM fsm = new CrossLevelTFSM(1.0f);
-
+    CrossLevelDIMSpan fsm = new CrossLevelDIMSpan(1.0f);
 
     GraphCollection result = fsm.execute(loader.getGraphCollectionByVariables("g1", "g2", "g3"));
 
@@ -33,7 +31,8 @@ public class CrossLevelTFSMIntegrationTest extends GradoopFlinkTestBase {
       "c1", "c2", "c3", "c4", "c5", "c6",
       "d1", "d2", "d3", "d4", "d5", "d6",
       "e1", "e2", "e3",
-      "h1", "h2");
+      "h1", "h2"
+    );
 
     collectAndAssertTrue(result.equalsByGraphElementData(expected));
   }

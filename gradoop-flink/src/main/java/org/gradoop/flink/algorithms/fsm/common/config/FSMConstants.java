@@ -61,7 +61,7 @@ public class FSMConstants {
    * Property key to store the canonical label.
    */
   public static final String CANONICAL_LABEL_KEY = "minDFS";
-  public static final String LEVEL_PREFIX = "_dl_";
+  public static final String DIMENSION_PREFIX = "_dl_";
 
   public static final String  LEVEL_DICTIONARY  = "lld";
 }
