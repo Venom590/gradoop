@@ -22,13 +22,15 @@ import org.apache.flink.api.java.ExecutionEnvironment;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.gradoop.common.model.impl.id.GradoopId;
+import org.gradoop.common.model.impl.id.GradoopIdList;
 import org.gradoop.common.model.impl.pojo.Edge;
 import org.gradoop.common.model.impl.pojo.GraphHead;
 import org.gradoop.common.model.impl.pojo.Vertex;
 import org.gradoop.flink.datagen.transactions.foodbroker.config.FoodBrokerConfig;
 import org.gradoop.flink.datagen.transactions.foodbroker.config.Constants;
-import org.gradoop.flink.datagen.transactions.foodbroker.functions.GraphIdsFromEdges;
-import org.gradoop.flink.datagen.transactions.foodbroker.functions.RelevantElementsFromBrokerage;
+import org.gradoop.flink.datagen.transactions.foodbroker.functions.TargetGraphIdList;
+import org.gradoop.flink.datagen.transactions.foodbroker.functions.TargetGraphIdPair;
+import org.gradoop.flink.datagen.transactions.foodbroker.functions.UpdateGraphIds;
 import org.gradoop.flink.datagen.transactions.foodbroker.functions.masterdata.EmployeeDataMapper;
 import org.gradoop.flink.datagen.transactions.foodbroker.functions.masterdata.MasterDataMapFromTuple;
 import org.gradoop.flink.datagen.transactions.foodbroker.functions.masterdata.BusinessRelationDataMapper;
@@ -48,7 +50,6 @@ import org.gradoop.flink.model.api.operators.GraphCollectionGenerator;
 import org.gradoop.flink.model.impl.GraphCollection;
 import org.gradoop.flink.model.impl.functions.epgm.GraphTransactionTriple;
 import org.gradoop.flink.model.impl.functions.epgm.Id;
-import org.gradoop.flink.model.impl.functions.epgm.TargetId;
 import org.gradoop.flink.model.impl.functions.epgm.TransactionEdges;
 import org.gradoop.flink.model.impl.functions.epgm.TransactionGraphHead;
 import org.gradoop.flink.model.impl.functions.epgm.TransactionVertices;
@@ -204,11 +205,13 @@ public class FoodBroker implements GraphCollectionGenerator {
       .union(products)
       .union(complaintHandlingMasterData);
 
-    masterData = masterData
-      .coGroup(transactionalEdges)
-      .where(new Id<Vertex>())
-      .equalTo(new TargetId<Edge>())
-      .with(new GraphIdsFromEdges());
+    masterData = transactionalEdges
+      .map(new TargetGraphIdPair())
+      .groupBy(0)
+      .reduceGroup(new TargetGraphIdList())
+      .join(masterData)
+      .where(0).equalTo(new Id<>())
+      .with(new UpdateGraphIds());
 
     DataSet<Vertex> vertices = masterData
       .union(transactionalVertices);

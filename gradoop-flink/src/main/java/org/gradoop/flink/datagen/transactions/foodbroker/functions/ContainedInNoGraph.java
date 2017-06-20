@@ -1,4 +1,4 @@
-package org.gradoop.flink.datagen.transactions.foodbroker;
+package org.gradoop.flink.datagen.transactions.foodbroker.functions;
 
 import org.apache.flink.api.common.functions.FilterFunction;
 import org.gradoop.common.model.api.entities.EPGMGraphElement;
