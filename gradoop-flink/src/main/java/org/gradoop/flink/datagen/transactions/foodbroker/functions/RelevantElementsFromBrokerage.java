@@ -17,53 +17,43 @@
 
 package org.gradoop.flink.datagen.transactions.foodbroker.functions;
 
-import org.apache.flink.api.common.functions.FlatMapFunction;
-import org.apache.flink.hadoop.shaded.com.google.common.collect.Sets;
-import org.apache.flink.util.Collector;
-import org.gradoop.common.model.impl.pojo.Edge;
-import org.gradoop.common.model.impl.pojo.Vertex;
-import org.gradoop.flink.datagen.transactions.foodbroker.config.Constants;
-import org.gradoop.flink.representation.transactional.GraphTransaction;
-
-import java.util.Set;
-
 /**
  * Filters all vertices and edges from the graph transaction which are relevant for the complaint
  * handling process.
  */
-public class RelevantElementsFromBrokerage
-  implements FlatMapFunction<GraphTransaction, GraphTransaction> {
-  @Override
-  public void flatMap(GraphTransaction graphTransaction,
-    Collector<GraphTransaction> collector) throws Exception {
-    //take only vertices which have the needed label
-    Set<Vertex> vertices = Sets.newHashSet();
-    for (Vertex vertex : graphTransaction.getVertices()) {
-      if (vertex.getLabel().equals(Constants.DELIVERYNOTE_VERTEX_LABEL) ||
-        vertex.getLabel().equals(Constants.SALESORDER_VERTEX_LABEL)) {
-        vertices.add(vertex);
-      }
-    }
-    //take only edges which have the needed label
-    Set<String> edgelabels = Sets.newHashSet(
-      Constants.CONTAINS_EDGE_LABEL,
-      Constants.OPERATEDBY_EDGE_LABEL,
-      Constants.PLACEDAT_EDGE_LABEL,
-      Constants.RECEIVEDFROM_EDGE_LABEL,
-      Constants.SALESORDERLINE_EDGE_LABEL,
-      Constants.PURCHORDERLINE_EDGE_LABEL);
-    Set<Edge> edges = Sets.newHashSet();
-    for (Edge edge : graphTransaction.getEdges()) {
-      if (edgelabels.contains(edge.getLabel())) {
-        edges.add(edge);
-      }
-    }
-    //vertices is empty if the sales quotation has not been confirmed during the brokerage process
-    if (!vertices.isEmpty()) {
-      //store only relevant information in the graph transaction
-      graphTransaction.setVertices(vertices);
-      graphTransaction.setEdges(edges);
-      collector.collect(graphTransaction);
-    }
-  }
+public class RelevantElementsFromBrokerage {
+//  implements MapFunction<GraphTransaction, GraphTransaction> {
+//
+//  @Override
+//  public GraphTransaction map(GraphTransaction graph) throws Exception {
+//    //take only vertices which have the needed label
+//    Set<Vertex> vertices = Sets.newHashSet();
+//    for (Vertex vertex : graph.getVertices()) {
+//      if (vertex.getLabel().equals(Constants.DELIVERYNOTE_VERTEX_LABEL) ||
+//        vertex.getLabel().equals(Constants.SALESORDER_VERTEX_LABEL)) {
+//        vertices.add(vertex);
+//      }
+//    }
+//    //take only edges which have the needed label
+//    Set<String> edgelabels = Sets.newHashSet(
+//      Constants.CONTAINS_EDGE_LABEL,
+//      Constants.OPERATEDBY_EDGE_LABEL,
+//      Constants.PLACEDAT_EDGE_LABEL,
+//      Constants.RECEIVEDFROM_EDGE_LABEL,
+//      Constants.SALESORDERLINE_EDGE_LABEL,
+//      Constants.PURCHORDERLINE_EDGE_LABEL);
+//    Set<Edge> edges = Sets.newHashSet();
+//    for (Edge edge : graph.getEdges()) {
+//      if (edgelabels.contains(edge.getLabel())) {
+//        edges.add(edge);
+//      }
+//    }
+//    //vertices is empty if the sales quotation has not been confirmed during the brokerage process
+//    if (!vertices.isEmpty()) {
+//      //store only relevant information in the graph transaction
+//      graph.setVertices(vertices);
+//      graph.setEdges(edges);
+//      collector.collect(graph);
+//    }
+//  }
 }

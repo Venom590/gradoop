@@ -130,6 +130,21 @@ public class FoodBrokerTest extends GradoopFlinkTestBase {
     Assert.assertTrue(actual < max);
   }
 
+  @Test
+  public void testCaseCount() throws Exception {
+
+    String configPath = FoodBroker.class.getResource("/foodbroker/config.json").getFile();
+
+    FoodBrokerConfig config = FoodBrokerConfig.fromFile(configPath);
+
+    config.setScaleFactor(1);
+
+    FoodBroker foodBroker = new FoodBroker(getExecutionEnvironment(), getConfig(), config);
+
+    assertEquals(10000, foodBroker.execute().getGraphHeads().count());
+
+  }
+
   private GraphCollection generateCollection()
     throws IOException, JSONException, URISyntaxException {
     String configPath = FoodBroker.class.getResource("/foodbroker/config.json").getFile();
