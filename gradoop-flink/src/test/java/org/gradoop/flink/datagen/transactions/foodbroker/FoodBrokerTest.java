@@ -132,9 +132,7 @@ public class FoodBrokerTest extends GradoopFlinkTestBase {
 
   private GraphCollection generateCollection()
     throws IOException, JSONException, URISyntaxException {
-    String configPath = Paths.get(
-    		new File(FoodBrokerTest.class.getResource("/foodbroker/config.json").getFile()).getAbsolutePath())
-    		.toFile().getPath();
+    String configPath = FoodBroker.class.getResource("/foodbroker/config.json").getFile();
 
     FoodBrokerConfig config = FoodBrokerConfig.fromFile(configPath);
 
@@ -150,5 +148,6 @@ public class FoodBrokerTest extends GradoopFlinkTestBase {
       return null;
     }
   }
+
 
 }
