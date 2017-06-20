@@ -23,7 +23,7 @@ import org.codehaus.jettison.json.JSONException;
 import org.gradoop.common.model.impl.pojo.Vertex;
 import org.gradoop.common.model.impl.properties.PropertyValue;
 import org.gradoop.flink.datagen.transactions.foodbroker.config.FoodBrokerConfig;
-import org.gradoop.flink.datagen.transactions.foodbroker.functions.ContainedInNoGraph;
+import org.gradoop.flink.model.impl.functions.graphcontainment.InNoGraph;
 import org.gradoop.flink.model.GradoopFlinkTestBase;
 import org.gradoop.flink.model.impl.GraphCollection;
 import org.gradoop.flink.model.impl.functions.epgm.ByLabel;
@@ -146,12 +146,12 @@ public class FoodBrokerTest extends GradoopFlinkTestBase {
 
     assertEquals(0, result10K
       .getVertices()
-      .filter(new ContainedInNoGraph<>())
+      .filter(new InNoGraph<>())
       .count());
 
     assertEquals(0, result10K
       .getEdges()
-      .filter(new ContainedInNoGraph<>())
+      .filter(new InNoGraph<>())
       .count());
   }
 
