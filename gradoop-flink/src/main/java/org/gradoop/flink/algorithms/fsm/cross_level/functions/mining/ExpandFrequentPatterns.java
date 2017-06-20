@@ -23,7 +23,6 @@ import org.gradoop.flink.algorithms.fsm.common.tuples.PatternEmbeddingsMap;
 import org.gradoop.flink.algorithms.fsm.cross_level.model.MultilevelVectorUtils;
 import org.gradoop.flink.algorithms.fsm.cross_level.tuples.MultilevelGraph;
 import org.gradoop.flink.algorithms.fsm.cross_level.tuples.MultilevelGraphWithPatternEmbeddingsMap;
-import org.gradoop.flink.model.impl.tuples.WithCount;
 
 /**
  * (graph, pattern -> embedding) => pattern, ...

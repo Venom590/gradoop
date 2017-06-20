@@ -21,7 +21,6 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.flink.api.java.tuple.Tuple1;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.gradoop.flink.algorithms.fsm.dimspan.model.Simple16Compressor;
-import org.gradoop.flink.model.impl.tuples.WithCount;
 
 import java.util.Objects;
 

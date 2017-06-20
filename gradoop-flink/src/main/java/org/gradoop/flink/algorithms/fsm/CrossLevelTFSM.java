@@ -31,7 +31,16 @@ import org.gradoop.flink.algorithms.fsm.cross_level.config.CrossLevelTFSMConfig;
 import org.gradoop.flink.algorithms.fsm.cross_level.config.VectorMiningStrategy;
 import org.gradoop.flink.algorithms.fsm.cross_level.functions.conversion.MultilevelPatternToEPGMGraphTransaction;
 
-import org.gradoop.flink.algorithms.fsm.cross_level.functions.mining.*;
+import org.gradoop.flink.algorithms.fsm.cross_level.functions.mining.CombineVectors;
+import org.gradoop.flink.algorithms.fsm.cross_level.functions.mining.ExpandFrequentPatterns;
+import org.gradoop.flink.algorithms.fsm.cross_level.functions.mining.Frequent;
+import org.gradoop.flink.algorithms.fsm.cross_level.functions.mining.FrequentCrossLevelPatterns;
+import org.gradoop.flink.algorithms.fsm.cross_level.functions.mining.GrowFrequentPatterns;
+import org.gradoop.flink.algorithms.fsm.cross_level.functions.mining.CreateCollector;
+import org.gradoop.flink.algorithms.fsm.cross_level.functions.mining.InitSingleEdgePatternEmbeddingsMap;
+import org.gradoop.flink.algorithms.fsm.cross_level.functions.mining.IsFrequentPatternCollector;
+import org.gradoop.flink.algorithms.fsm.cross_level.functions.mining.ReportSupportedPatterns;
+import org.gradoop.flink.algorithms.fsm.cross_level.functions.mining.NotObsolete;
 import org.gradoop.flink.algorithms.fsm.cross_level.functions.preprocessing.CreateDictionary;
 import org.gradoop.flink.algorithms.fsm.cross_level.functions.preprocessing.Encode;
 import org.gradoop.flink.algorithms.fsm.cross_level.functions.preprocessing
@@ -347,7 +356,8 @@ public class CrossLevelTFSM implements UnaryCollectionToCollectionOperator {
    * @param patterns reported patterns
    * @return valid frequent patterns
    */
-  private GroupReduceOperator<PatternVectors, PatternVectors> getFrequentPatterns(DataSet<MultilevelGraph> patterns) {
+  private GroupReduceOperator<PatternVectors, PatternVectors> getFrequentPatterns(
+    DataSet<MultilevelGraph> patterns) {
 
     return patterns
       .groupBy(0)

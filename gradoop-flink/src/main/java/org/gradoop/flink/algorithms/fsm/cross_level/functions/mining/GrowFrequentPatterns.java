@@ -18,7 +18,6 @@
 package org.gradoop.flink.algorithms.fsm.cross_level.functions.mining;
 
 import com.google.common.collect.Lists;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.flink.api.common.functions.RichMapFunction;
 import org.apache.flink.configuration.Configuration;
 import org.gradoop.flink.algorithms.fsm.common.config.FSMConstants;
@@ -31,7 +30,6 @@ import org.gradoop.flink.algorithms.fsm.cross_level.tuples.MultilevelGraphWithPa
 import org.gradoop.flink.algorithms.fsm.cross_level.tuples.PatternVectors;
 import org.gradoop.flink.model.impl.tuples.WithCount;
 
-import java.util.Collection;
 import java.util.List;
 
 /**
