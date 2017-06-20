@@ -80,13 +80,11 @@ public class ComplaintHandling extends AbstractProcess
    * @param epgmVertexFactory EPGM vertex factory
    * @param epgmEdgeFactory EPGM edge factory
    * @param config FoodBroker configuration
-   * @param globalSeed global seed
    */
   public ComplaintHandling(EPGMGraphHeadFactory<GraphHead> epgmGraphHeadFactory,
     EPGMVertexFactory<Vertex> epgmVertexFactory, EPGMEdgeFactory<Edge> epgmEdgeFactory,
-    FoodBrokerConfig config, long globalSeed) {
+    FoodBrokerConfig config) {
     super(epgmGraphHeadFactory, epgmVertexFactory, epgmEdgeFactory, config);
-    this.globalSeed = globalSeed;
   }
 
   @Override

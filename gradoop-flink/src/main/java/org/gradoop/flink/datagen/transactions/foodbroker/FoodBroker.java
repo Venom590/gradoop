@@ -22,7 +22,6 @@ import org.apache.flink.api.java.ExecutionEnvironment;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.gradoop.common.model.impl.id.GradoopId;
-import org.gradoop.common.model.impl.id.GradoopIdList;
 import org.gradoop.common.model.impl.pojo.Edge;
 import org.gradoop.common.model.impl.pojo.GraphHead;
 import org.gradoop.common.model.impl.pojo.Vertex;
@@ -163,11 +162,10 @@ public class FoodBroker implements GraphCollectionGenerator {
 
     // Phase 2.2: Run Complaint Handling
     DataSet<Tuple2<GraphTransaction, Set<Vertex>>> casesCITMasterData = cases
-//      .map(new RelevantElementsFromBrokerage())
       .map(new ComplaintHandling(
         gradoopFlinkConfig.getGraphHeadFactory(),
         gradoopFlinkConfig.getVertexFactory(),
-        gradoopFlinkConfig.getEdgeFactory(), foodBrokerConfig, 0))
+        gradoopFlinkConfig.getEdgeFactory(), foodBrokerConfig))
       .withBroadcastSet(customerMap, Constants.CUSTOMER_MAP_BC)
       .withBroadcastSet(vendorMap, Constants.VENDOR_MAP_BC)
       .withBroadcastSet(logisticsQualityMap, Constants.LOGISTIC_MAP_BC)
@@ -205,6 +203,8 @@ public class FoodBroker implements GraphCollectionGenerator {
       .union(products)
       .union(complaintHandlingMasterData);
 
+    // extract all graph ids from edges and updated those master data graph ids with these where
+    // the master data vertex is the target
     masterData = transactionalEdges
       .map(new TargetGraphIdPair())
       .groupBy(0)
