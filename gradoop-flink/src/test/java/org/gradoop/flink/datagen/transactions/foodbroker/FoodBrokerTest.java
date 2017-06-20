@@ -131,7 +131,7 @@ public class FoodBrokerTest extends GradoopFlinkTestBase {
   }
 
   @Test
-  public void testCaseCount() throws Exception {
+  public void testLargeSetStatistics() throws Exception {
 
     String configPath = FoodBroker.class.getResource("/foodbroker/config.json").getFile();
 
@@ -141,8 +141,19 @@ public class FoodBrokerTest extends GradoopFlinkTestBase {
 
     FoodBroker foodBroker = new FoodBroker(getExecutionEnvironment(), getConfig(), config);
 
-    assertEquals(10000, foodBroker.execute().getGraphHeads().count());
+    GraphCollection result10K = foodBroker.execute();
 
+    assertEquals(10000, result10K.getGraphHeads().count());
+
+    assertEquals(0, result10K
+      .getVertices()
+      .filter(new ContainedInNoGraph<>())
+      .count());
+
+    assertEquals(0, result10K
+      .getEdges()
+      .filter(new ContainedInNoGraph<>())
+      .count());
   }
 
   private GraphCollection generateCollection()
